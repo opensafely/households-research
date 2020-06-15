@@ -2,7 +2,7 @@
 
 This is a template repository for making new OpenSAFELY resarch projects.  Eventually it'll become a framework. To get started, create a new repo using this repo as a template, delete this front matter, and edit the text that follows.
 
-# _title goes here_
+# Analysis of household transmission in England
 
 This is the code and configuration for our paper, _name goes here_
 
