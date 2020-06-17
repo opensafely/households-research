@@ -119,4 +119,8 @@ study = StudyDefinition(
             "category": {"ratios": {"PC": 0.05, "PN": 0.05, "PS": 0.05, "U": 0.85,},},
         },
     ),
+
+    ### DUMMY HOUSEHOLD mirrors https://github.com/opensafely/cohort-extractor/issues/170
+    household_id = None,
+    household_size = None
 )
