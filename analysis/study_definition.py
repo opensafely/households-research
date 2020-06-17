@@ -18,7 +18,8 @@ study = StudyDefinition(
     # Configure the expectations framework
     default_expectations={
         "date": {"earliest": "1900-01-01", "latest": "today"},
-        "rate": "exponential_increase",
+        "rate": "uniform",
+        "incidence": 0.5,
     },
     # This line defines the study population
     population=patients.registered_with_one_practice_between(
@@ -121,6 +122,17 @@ study = StudyDefinition(
     ),
 
     ### DUMMY HOUSEHOLD mirrors https://github.com/opensafely/cohort-extractor/issues/170
-    household_id = None,
-    household_size = None
+    # #TODO: replace with real code when available
+    # household_id = patients.most_recent_bmi(
+    #     on_or_after="2010-02-01",
+    #     minimum_age_at_measurement=16,
+    #     include_measurement_date=True,
+    #     include_month=True,
+    #     return_expectations={
+    #         "incidence": 0.99,
+    #         "float": {"distribution": "normal", "mean": 35, "stddev": 10},
+    #     },
+    # ),
+
+    # household_size = randint(1, 6),
 )
