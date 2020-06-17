@@ -123,16 +123,22 @@ study = StudyDefinition(
 
     ### DUMMY HOUSEHOLD mirrors https://github.com/opensafely/cohort-extractor/issues/170
     # #TODO: replace with real code when available
-    # household_id = patients.most_recent_bmi(
-    #     on_or_after="2010-02-01",
-    #     minimum_age_at_measurement=16,
-    #     include_measurement_date=True,
-    #     include_month=True,
-    #     return_expectations={
-    #         "incidence": 0.99,
-    #         "float": {"distribution": "normal", "mean": 35, "stddev": 10},
-    #     },
-    # ),
+    household_id=patients.with_these_clinical_events(
+        creatinine_codes, #### THIS IS A PLACEHOLDER
+        returning="number_of_matches_in_period",
+        return_expectations={
+            "int": {"distribution": "normal", "mean": 1000, "stddev": 200},
+            "incidence": 0.95,
+        }
+    ),
 
-    # household_size = randint(1, 6),
+    # #TODO: replace with real code when available
+    household_size=patients.with_these_clinical_events(
+        creatinine_codes, #### THIS IS A PLACEHOLDER
+        returning="number_of_matches_in_period",
+        return_expectations={
+            "int": {"distribution": "normal", "mean": 3, "stddev": 1},
+            "incidence": 0.95,
+        }
+    ),
 )
