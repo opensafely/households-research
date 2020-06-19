@@ -4,3 +4,5 @@ model.log
 __pycache__
 .python-version
 .idea/
+.Rapp.history
+.DS_Store
