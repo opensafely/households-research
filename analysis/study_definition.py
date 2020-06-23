@@ -309,7 +309,8 @@ study = StudyDefinition(
     tested_for_covid=patients.with_test_result_in_sgss(
         pathogen="SARS-CoV-2",
         test_result="any",
-        on_or_before="2020-05-01"
+        on_or_before="2020-05-01",
+        return_expectations={"incidence": 0.25},
     ),
     first_positive_test_date=patients.with_test_result_in_sgss(
         pathogen="SARS-CoV-2",
@@ -317,6 +318,11 @@ study = StudyDefinition(
         find_first_match_in_period=True,
         returning="date",
         date_format="YYYY-MM-DD",
+        return_expectations={
+            "float": {"distribution": "normal", "mean": 60.0, "stddev": 15},
+            "date": {"earliest": "2020-03-28", "latest": "2020-06-22"},
+            "incidence": 0.1,
+        },
     ),
     care_home_type=patients.care_home_status_as_of(
         "2020-02-01",
