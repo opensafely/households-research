@@ -174,7 +174,7 @@ study = StudyDefinition(
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
             "date": {"earliest": "2019-02-28", "latest": "2020-02-29"},
-            "incidence": 0.95,
+            "incidence": 0.1,
         },
     ),
     primary_care_historic_case=patients.with_these_clinical_events(
@@ -185,7 +185,7 @@ study = StudyDefinition(
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
             "date": {"earliest": "2019-02-28", "latest": "2020-02-29"},
-            "incidence": 0.95,
+            "incidence": 0.1,
         },
     ),
     primary_care_potential_historic_case=patients.with_these_clinical_events(
@@ -196,7 +196,7 @@ study = StudyDefinition(
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
             "date": {"earliest": "2019-02-28", "latest": "2020-02-29"},
-            "incidence": 0.95,
+            "incidence": 0.05,
         },
     ),
     primary_care_exposure=patients.with_these_clinical_events(
@@ -207,7 +207,7 @@ study = StudyDefinition(
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
             "date": {"earliest": "2019-02-28", "latest": "2020-02-29"},
-            "incidence": 0.95,
+            "incidence": 0.15,
         },
     ),
     primary_care_suspect_case=patients.with_these_clinical_events(
@@ -218,7 +218,7 @@ study = StudyDefinition(
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
             "date": {"earliest": "2019-02-28", "latest": "2020-02-29"},
-            "incidence": 0.95,
+            "incidence": 0.3,
         },
     ),
     # https://github.com/ebmdatalab/tpp-sql-notebook/issues/21
