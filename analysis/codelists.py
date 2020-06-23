@@ -9,8 +9,31 @@ aplastic_codes = codelist_from_csv(
     "codelists/opensafely-aplastic-anaemia.csv", system="ctv3", column="CTV3ID"
 )
 
-covid_primary_care = codelist_from_csv(
+covid_primary_care_case = codelist_from_csv(
     "codelists/opensafely-covid-identification-in-primary-care-case.csv", 
+    system="ctv3", 
+    column="CTV3ID",
+)
+
+covid_primary_exposure = codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-exposure-to-disease.csv", 
+    system="ctv3", 
+    column="CTV3ID",
+)
+
+covid_primary_care_historic_case = codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-historic_case.csv", 
+    system="ctv3", 
+    column="CTV3ID",
+)
+
+covid_primary_care_potential_historic_case = codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-potential_historic_case.csv", 
+    system="ctv3", 
+    column="CTV3ID",
+)
+covid_primary_care_suspect_case = codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-suspect_case.csv", 
     system="ctv3", 
     column="CTV3ID",
 )
