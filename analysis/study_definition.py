@@ -166,6 +166,17 @@ study = StudyDefinition(
             "incidence": 0.75,
         },
     ),
+    primary_care_suspect_case=patients.with_these_clinical_events(
+        covid_primary_care,
+        returning="Date",
+        return_first_date_in_period=True,
+        include_date_of_match=True,
+        return_expectations={
+            "float": {"distribution": "normal", "mean": 60.0, "stddev": 15},
+            "date": {"earliest": "2019-02-28", "latest": "2020-02-29"},
+            "incidence": 0.95,
+        },
+    ),
     # https://github.com/ebmdatalab/tpp-sql-notebook/issues/21
     chronic_respiratory_disease=patients.with_these_clinical_events(
         chronic_respiratory_disease_codes,
