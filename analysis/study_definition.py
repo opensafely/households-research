@@ -170,7 +170,6 @@ study = StudyDefinition(
         covid_primary_care_case,
         returning="Date",
         find_first_match_in_period=True,
-        returning="date",
         date_format="YYYY-MM-DD",
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
@@ -182,7 +181,6 @@ study = StudyDefinition(
         covid_primary_care_historic_case,
         returning="Date",
         find_first_match_in_period=True,
-        returning="date",
         date_format="YYYY-MM-DD",
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
@@ -194,7 +192,6 @@ study = StudyDefinition(
         covid_primary_care_potential_historic_case,
         returning="Date",
         find_first_match_in_period=True,
-        returning="date",
         date_format="YYYY-MM-DD",
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
@@ -206,7 +203,6 @@ study = StudyDefinition(
         covid_primary_exposure,
         returning="Date",
         find_first_match_in_period=True,
-        returning="date",
         date_format="YYYY-MM-DD",
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
@@ -218,7 +214,6 @@ study = StudyDefinition(
         covid_primary_care_suspect_case,
         returning="Date",
         find_first_match_in_period=True,
-        returning="date",
         date_format="YYYY-MM-DD",
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
