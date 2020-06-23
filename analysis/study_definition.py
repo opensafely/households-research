@@ -279,26 +279,6 @@ study = StudyDefinition(
     organ_transplant=patients.with_these_clinical_events(
         organ_transplant_codes, return_first_date_in_period=True, include_month=True,
     ),
-    # https://github.com/ebmdatalab/tpp-sql-notebook/issues/13
-    dysplenia=patients.with_these_clinical_events(
-        spleen_codes, return_first_date_in_period=True, include_month=True,
-    ),
-    sickle_cell=patients.with_these_clinical_events(
-        sickle_cell_codes, return_first_date_in_period=True, include_month=True,
-    ),
-    # https://github.com/ebmdatalab/tpp-sql-notebook/issues/36
-    aplastic_anaemia=patients.with_these_clinical_events(
-        aplastic_codes, return_last_date_in_period=True, include_month=True,
-    ),
-    hiv=patients.with_these_clinical_events(
-        hiv_codes, return_first_date_in_period=True, include_month=True,
-    ),
-    permanent_immunodeficiency=patients.with_these_clinical_events(
-        permanent_immune_codes, return_first_date_in_period=True, include_month=True,
-    ),
-    temporary_immunodeficiency=patients.with_these_clinical_events(
-        temp_immune_codes, return_last_date_in_period=True, include_month=True,
-    ),
     # https://github.com/ebmdatalab/tpp-sql-notebook/issues/23
     # immunosuppressant_med=
     # hypertension
@@ -306,64 +286,9 @@ study = StudyDefinition(
         hypertension_codes, return_first_date_in_period=True, include_month=True,
     ),
     # Blood pressure
-    # https://github.com/ebmdatalab/tpp-sql-notebook/issues/35
-    bp_sys=patients.mean_recorded_value(
-        systolic_blood_pressure_codes,
-        on_most_recent_day_of_measurement=True,
-        on_or_before="2020-02-01",
-        include_measurement_date=True,
-        include_month=True,
-        return_expectations={
-            "float": {"distribution": "normal", "mean": 80, "stddev": 10},
-            "date": {"latest": "2020-02-29"},
-            "incidence": 0.95,
-        },
-    ),
-    bp_dias=patients.mean_recorded_value(
-        diastolic_blood_pressure_codes,
-        on_most_recent_day_of_measurement=True,
-        on_or_before="2020-02-01",
-        include_measurement_date=True,
-        include_month=True,
-        return_expectations={
-            "float": {"distribution": "normal", "mean": 120, "stddev": 10},
-            "date": {"latest": "2020-02-29"},
-            "incidence": 0.95,
-        },
-    ),
-    hba1c_mmol_per_mol=patients.with_these_clinical_events(
-        hba1c_new_codes,
-        find_last_match_in_period=True,
-        on_or_before="2020-02-01",
-        returning="numeric_value",
-        include_date_of_match=True,
-        include_month=True,
-        return_expectations={
-            "date": {"latest": "2020-02-29"},
-            "float": {"distribution": "normal", "mean": 40.0, "stddev": 20},
-            "incidence": 0.95,
-        },
-    ),
-    hba1c_percentage=patients.with_these_clinical_events(
-        hba1c_old_codes,
-        find_last_match_in_period=True,
-        on_or_before="2020-02-01",
-        returning="numeric_value",
-        include_date_of_match=True,
-        include_month=True,
-        return_expectations={
-            "date": {"latest": "2020-02-29"},
-            "float": {"distribution": "normal", "mean": 5, "stddev": 2},
-            "incidence": 0.95,
-        },
-    ),
     # # https://github.com/ebmdatalab/tpp-sql-notebook/issues/49
     ra_sle_psoriasis=patients.with_these_clinical_events(
         ra_sle_psoriasis_codes, return_first_date_in_period=True, include_month=True,
-    ),
-    # https://github.com/ebmdatalab/tpp-sql-notebook/issues/51
-    gi_bleed_and_ulcer=patients.with_these_clinical_events(
-        gi_bleed_and_ulcer_codes, return_first_date_in_period=True, include_month=True
     ),
     # https://github.com/ebmdatalab/tpp-sql-notebook/issues/50
     inflammatory_bowel_disease=patients.with_these_clinical_events(
