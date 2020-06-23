@@ -298,11 +298,13 @@ study = StudyDefinition(
     ),
     positive_covid_test_ever=patients.with_test_result_in_sgss(
         pathogen="SARS-CoV-2",
-        test_result="positive"
+        test_result="positive",
+        return_expectations={"incidence": 0.1},
     ),
     negative_covid_test_ever=patients.with_test_result_in_sgss(
         pathogen="SARS-CoV-2",
-        test_result="negative"
+        test_result="negative",
+        return_expectations={"incidence": 0.9},
     ),
     tested_for_covid=patients.with_test_result_in_sgss(
         pathogen="SARS-CoV-2",
