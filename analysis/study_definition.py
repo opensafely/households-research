@@ -137,33 +137,16 @@ study = StudyDefinition(
     bmi=patients.most_recent_bmi(
         on_or_after="2010-02-01",
         minimum_age_at_measurement=16,
-        include_measurement_date=True,
-        include_month=True,
         return_expectations={
-            "date": {},
             "float": {"distribution": "normal", "mean": 35, "stddev": 10},
-            "incidence": 0.95,
-        },
-    ),
-    # https://github.com/ebmdatalab/tpp-sql-notebook/issues/27
-    ethnicity=patients.with_these_clinical_events(
-        ethnicity_codes,
-        returning="category",
-        find_last_match_in_period=True,
-        include_date_of_match=True,
-        return_expectations={
-            "category": {"ratios": {"1": 0.8, "5": 0.1, "3": 0.1}},
-            "incidence": 0.75,
         },
     ),
     ethnicity_16=patients.with_these_clinical_events(
         ethnicity_codes_16,
         returning="category",
         find_last_match_in_period=True,
-        include_date_of_match=True,
         return_expectations={
             "category": {"ratios": {"1": 0.8, "5": 0.1, "3": 0.1}},
-            "incidence": 0.75,
         },
     ),
     primary_care_case=patients.with_these_clinical_events(
@@ -174,7 +157,7 @@ study = StudyDefinition(
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
             "date": {"earliest": "2019-02-28", "latest": "2020-02-29"},
-            "incidence": 0.1,
+            "incidence": 0.15,
         },
     ),
     primary_care_historic_case=patients.with_these_clinical_events(
@@ -218,7 +201,7 @@ study = StudyDefinition(
         return_expectations={
             "float": {"distribution": "normal", "mean": 20.0, "stddev": 10},
             "date": {"earliest": "2019-02-28", "latest": "2020-02-29"},
-            "incidence": 0.3,
+            "incidence": 0.35,
         },
     ),
     # https://github.com/ebmdatalab/tpp-sql-notebook/issues/21
@@ -288,14 +271,6 @@ study = StudyDefinition(
     other_cancer=patients.with_these_clinical_events(
         other_cancer_codes, return_first_date_in_period=True, include_month=True,
     ),
-    bone_marrow_transplant=patients.with_these_clinical_events(
-        bone_marrow_transplant_codes,
-        return_last_date_in_period=True,
-        include_month=True,
-    ),
-    chemo_radio_therapy=patients.with_these_clinical_events(
-        chemo_radio_therapy_codes, return_last_date_in_period=True, include_month=True,
-    ),
     # # https://github.com/ebmdatalab/tpp-sql-notebook/issues/12
     chronic_liver_disease=patients.with_these_clinical_events(
         chronic_liver_disease_codes,
@@ -312,44 +287,11 @@ study = StudyDefinition(
     dementia=patients.with_these_clinical_events(
         dementia, return_first_date_in_period=True, include_month=True,
     ),
-    # # Chronic kidney disease
-    # https://github.com/ebmdatalab/tpp-sql-notebook/issues/17
-    creatinine=patients.with_these_clinical_events(
-        creatinine_codes,
-        find_last_match_in_period=True,
-        on_or_before="2020-02-01",
-        returning="numeric_value",
-        include_date_of_match=True,
-        include_month=True,
-        return_expectations={
-            "float": {"distribution": "normal", "mean": 60.0, "stddev": 15},
-            "date": {"earliest": "2019-02-28", "latest": "2020-02-29"},
-            "incidence": 0.95,
-        },
-    ),
-    dialysis=patients.with_these_clinical_events(
-        dialysis_codes, return_first_date_in_period=True, include_month=True,
-    ),
-    # https://github.com/ebmdatalab/tpp-sql-notebook/issues/31
-    organ_transplant=patients.with_these_clinical_events(
-        organ_transplant_codes, return_first_date_in_period=True, include_month=True,
-    ),
     # https://github.com/ebmdatalab/tpp-sql-notebook/issues/23
     # immunosuppressant_med=
     # hypertension
     hypertension=patients.with_these_clinical_events(
         hypertension_codes, return_first_date_in_period=True, include_month=True,
-    ),
-    # Blood pressure
-    # # https://github.com/ebmdatalab/tpp-sql-notebook/issues/49
-    ra_sle_psoriasis=patients.with_these_clinical_events(
-        ra_sle_psoriasis_codes, return_first_date_in_period=True, include_month=True,
-    ),
-    # https://github.com/ebmdatalab/tpp-sql-notebook/issues/50
-    inflammatory_bowel_disease=patients.with_these_clinical_events(
-        inflammatory_bowel_disease_codes,
-        return_first_date_in_period=True,
-        include_month=True,
     ),
     positive_covid_test_ever=patients.with_test_result_in_sgss(
         pathogen="SARS-CoV-2",
@@ -397,7 +339,7 @@ study = StudyDefinition(
         },
         return_expectations={
             "rate": "universal",
-            "category": {"ratios": {"PC": 0.05, "PN": 0.02, "PS": 0.03, "U": 0.90,},},
+            "category": {"ratios": {"PC": 0.01, "PN": 0.01, "PS": 0.01, "U": 0.97,},},
         },
     ),
     household_id=patients.household_as_of(
@@ -412,7 +354,7 @@ study = StudyDefinition(
         "2020-02-01",
         returning="household_size",
         return_expectations={
-            "int": {"distribution": "normal", "mean": 3, "stddev": 1},
+            "int": {"distribution": "normal", "mean": 3, "stddev": 1.5},
             "incidence": 1,
         },
     ),
