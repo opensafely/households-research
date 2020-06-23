@@ -29,3 +29,4 @@ opensafely/smoking-unclear/2020-04-29
 opensafely/solid-organ-transplantation/2020-04-10
 opensafely/stroke-updated/2020-06-02
 opensafely/temporary-immunosuppresion/2020-04-24
+opensafely/covid-identification-in-primary-care-case/2020-06-23

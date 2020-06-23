@@ -9,6 +9,12 @@ aplastic_codes = codelist_from_csv(
     "codelists/opensafely-aplastic-anaemia.csv", system="ctv3", column="CTV3ID"
 )
 
+covid_primary_care = codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-case.csv", 
+    system="ctv3", 
+    column="CTV3ID",
+)
+
 hiv_codes = codelist_from_csv(
     "codelists/opensafely-hiv.csv", system="ctv3", column="CTV3ID"
 )
