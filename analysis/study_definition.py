@@ -171,12 +171,6 @@ study = StudyDefinition(
             on_or_before="2020-02-01",
         ),
     ),
-    smoking_status_date=patients.with_these_clinical_events(
-        clear_smoking_codes,
-        on_or_before="2020-02-01",
-        return_last_date_in_period=True,
-        include_month=True,
-    ),
     # https://github.com/ebmdatalab/tpp-sql-notebook/issues/27
     ethnicity=patients.with_these_clinical_events(
         ethnicity_codes,
