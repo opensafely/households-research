@@ -296,6 +296,26 @@ study = StudyDefinition(
         return_first_date_in_period=True,
         include_month=True,
     ),
+    positive_covid_test_ever=patients.with_test_result_in_sgss(
+        pathogen="SARS-CoV-2",
+        test_result="positive"
+    ),
+    negative_covid_test_ever=patients.with_test_result_in_sgss(
+        pathogen="SARS-CoV-2",
+        test_result="negative"
+    ),
+    tested_for_covid=patients.with_test_result_in_sgss(
+        pathogen="SARS-CoV-2",
+        test_result="any",
+        on_or_before="2020-05-01"
+    ),
+    first_positive_test_date=patients.with_test_result_in_sgss(
+        pathogen="SARS-CoV-2",
+        test_result="positive",
+        find_first_match_in_period=True,
+        returning="date",
+        date_format="YYYY-MM-DD",
+    ),
     care_home_type=patients.care_home_status_as_of(
         "2020-02-01",
         categorised_as={
