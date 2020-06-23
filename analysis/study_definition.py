@@ -168,7 +168,7 @@ study = StudyDefinition(
     ),
     primary_care_case=patients.with_these_clinical_events(
         covid_primary_care_case,
-        returning="Date",
+        returning="date",
         find_first_match_in_period=True,
         date_format="YYYY-MM-DD",
         return_expectations={
@@ -179,7 +179,7 @@ study = StudyDefinition(
     ),
     primary_care_historic_case=patients.with_these_clinical_events(
         covid_primary_care_historic_case,
-        returning="Date",
+        returning="date",
         find_first_match_in_period=True,
         date_format="YYYY-MM-DD",
         return_expectations={
@@ -190,7 +190,7 @@ study = StudyDefinition(
     ),
     primary_care_potential_historic_case=patients.with_these_clinical_events(
         covid_primary_care_potential_historic_case,
-        returning="Date",
+        returning="date",
         find_first_match_in_period=True,
         date_format="YYYY-MM-DD",
         return_expectations={
@@ -201,7 +201,7 @@ study = StudyDefinition(
     ),
     primary_care_exposure=patients.with_these_clinical_events(
         covid_primary_exposure,
-        returning="Date",
+        returning="date",
         find_first_match_in_period=True,
         date_format="YYYY-MM-DD",
         return_expectations={
@@ -212,7 +212,7 @@ study = StudyDefinition(
     ),
     primary_care_suspect_case=patients.with_these_clinical_events(
         covid_primary_care_suspect_case,
-        returning="Date",
+        returning="date",
         find_first_match_in_period=True,
         date_format="YYYY-MM-DD",
         return_expectations={
