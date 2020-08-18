@@ -31,21 +31,21 @@ DATASETS CREATED:
 ======================================================================================================================================================================================*/
 
 /*
-cd ${outputData}
+cd ${dummyData}
 clear all
 
 import delimited input.csv
 save input.dta, replace
 */
 
-cd ${outputData}
+cd ${dummyData}
 clear all
 
 use input.dta
 
 
 
-
+cd ${outputData}
 *===============(2) Correct dummy data nonsense in relation to households i.e. not need to be run on live data although shouldn't matter if they are====================
 *(a) Issue 1: household size contains negative numbers and does not relate to the actual number of people in the household
 rename hh_size OLD_hh_size 

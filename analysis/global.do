@@ -39,8 +39,9 @@ global Projectdir "/Users/kw/Documents/GitHub/households-research"
 
 
 *global codes "$Projectdir\00_codes"
-global outputData "$Projectdir/output"
-global dummyData "$Projectdir/analysis"
+global outputData "/Users/kw/Documents/draftSTATAoutput/households"
+global dummyData "$Projectdir/output"
+
 
 
 set more off, perm

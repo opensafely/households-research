@@ -681,13 +681,19 @@ Outcome summary:
 covid_primary_care_sequalae
 */
 
-*MONDAY NEED TO RERUN THIS TO SEE WHY PRIMARY_CARE_CASE CAN'T BE FOUND
+*Think we only need the outcome that is the 3 primary types of probable primary care codes
 	
-/****   Outcome definitions   ****/
+*order variables
+order patient_id age hh_id hh_size caseDate
+
+
+*save file
+save hh_analysis_dataset_DRAFT.dta, replace
+*outout as .csv
+
+/*
 tab primary_care_case
 tab primary_care_historic_case
-
-ren primary_care_case			confirmed_case_date
 *ren primary_care_suspect_case	suspected_date
 
 ren first_tested_for_covid		tested_date
@@ -705,8 +711,11 @@ gen onssuspecteddeath_date = onsdeath_date if died_ons_suspectedcovid_flag_any =
 * Date of non-COVID death in ONS 
 * If missing date of death resulting died_date will also be missing
 gen ons_noncoviddeath_date = onsdeath_date if died_ons_covid_flag_any != 1
+*/
 
 
+
+/*Rohini's code I haven't reviewed yet
 
 /* CONVERT STRINGS TO DATE FOR OUTCOME VARIABLES =============================*/
 * Recode to dates from the strings 
