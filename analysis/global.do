@@ -42,6 +42,10 @@ global Projectdir "/Users/kw/Documents/GitHub/households-research"
 global outputData "/Users/kw/Documents/draftSTATAoutput/households"
 global dummyData "$Projectdir/output"
 
+*set up ado filepath
+sysdir
+sysdir set PLUS "/Users/kw/Documents/GitHub/households-research/analysis/adofiles"
+sysdir set PERSONAL "/Users/kw/Documents/GitHub/households-research/analysis/adofiles"
 
 
 set more off, perm

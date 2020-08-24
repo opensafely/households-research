@@ -229,13 +229,6 @@ tab hh_size hh_total_cat,m
 *  Create required cohort  *
 ****************************
 
-/*don't think I want to drop kids
-/* DROP ALL KIDS, AS HH COMPOSITION VARS ARE NOW MADE */
-noi di "DROPPING AGE<18:" 
-drop if age<18
-safecoun
-*/
-
 * Age: Exclude those with implausible ages
 cap assert age<.
 noi di "DROPPING AGE<105:" 
@@ -685,23 +678,16 @@ covid_primary_care_sequalae
 	
 *order variables
 order patient_id age hh_id hh_size caseDate
+ren caseDate case_date
 
-
-*save file
-save hh_analysis_dataset_DRAFT.dta, replace
-*outout as .csv
-
-/*
-tab primary_care_case
-tab primary_care_historic_case
-*ren primary_care_suspect_case	suspected_date
-
+ren primary_care_suspect_case	suspected_date
 ren first_tested_for_covid		tested_date
 ren first_positive_test_date	positivetest_date
 ren a_e_consult_date 			ae_date
 ren icu_date_admitted			icu_date
 ren died_date_cpns				cpnsdeath_date
 ren died_date_ons				onsdeath_date
+
 
 * Date of Covid death in ONS
 gen onscoviddeath_date = onsdeath_date if died_ons_covid_flag_any == 1
@@ -711,11 +697,8 @@ gen onssuspecteddeath_date = onsdeath_date if died_ons_suspectedcovid_flag_any =
 * Date of non-COVID death in ONS 
 * If missing date of death resulting died_date will also be missing
 gen ons_noncoviddeath_date = onsdeath_date if died_ons_covid_flag_any != 1
-*/
 
 
-
-/*Rohini's code I haven't reviewed yet
 
 /* CONVERT STRINGS TO DATE FOR OUTCOME VARIABLES =============================*/
 * Recode to dates from the strings 
@@ -732,7 +715,7 @@ foreach var of global outcomes {
 }
 
 *Date of first severe outcome
-replace severe_date = min(ae_date, icu_date, onscoviddeath_date)
+*replace severe_date = min(ae_date, icu_date, onscoviddeath_date)
 
 *If outcome occurs on the first day of follow-up add one day
 foreach i of global outcomes {
@@ -753,9 +736,14 @@ foreach i of global outcomes {
 		safetab `i'
 }
 
+order patient_id age hh_id hh_size case case_date
+
+/*
 drop severe
 gen severe=1 if ae==1 | icu==1 | onscoviddeath==1
+*/
 
+/*
 /* CENSORING */
 /* SET FU DATES===============================================================*/ 
 
@@ -778,6 +766,8 @@ gen severe_censor_date  = d("24/07/2020")
 *******************************************************************************
 format *censor_date %d
 sum *censor_date, format
+*/
+
 *******************************
 *  Recode implausible values  *
 *******************************
@@ -789,6 +779,7 @@ replace bmi = . if !inrange(bmi, 15, 50)
 
 
 /**** Create survival times  ****/
+/*
 * For looping later, name must be stime_binary_outcome_name
 
 * Survival time = last followup date (first: deregistration date, end study, death, or that outcome)
@@ -811,6 +802,7 @@ foreach i of global outcomes {
 	histogram `i'_date, discrete width(15) frequency ytitle(`i') xtitle(Date) scheme(meta) 
 graph export "$Tabfigdir/outcome_`i'_freq.svg", as(svg) replace
 }
+*/
 
 /* LABEL VARIABLES============================================================*/
 *  Label variables you are intending to keep, drop the rest 
@@ -921,21 +913,25 @@ lab var spironolactone_date 				"Spironolactone in last 12 months"
 lab var thiazide_diuretics_date				"TZD in last 12 months"
 
 * Outcomes and follow-up
+
 label var indexdate					"Date of study start (Feb 1 2020)"
 foreach i of global outcomes {
 	label var `i'_censor_date		 "Date of admin censoring"
 }
+
 *Outcome dates
 foreach i of global outcomes {
 	label var `i'_date					"Failure date:  `i'"
 	d `i'_date
 }
 
+/*
 * Survival times
 foreach i of global outcomes {
 	lab var stime_`i' 					"Survivatime (date): `i'"
 	d stime_`i'
 }
+*/
 
 * binary outcome indicators
 foreach i of global outcomes {
@@ -943,6 +939,11 @@ foreach i of global outcomes {
 	safetab `i'
 }
 label var was_ventilated_flag		"outcome: ICU Ventilation"
+
+la var case "Probable case"
+la var case_date "Probable case_date"
+la var onsdeath_date "Date of death recorded in ONS"
+la var cpnsdeath_date "Date of death recorded in CPNS"
 
 /* TIDY DATA==================================================================*/
 *  Drop variables that are not needed (those not labelled)
@@ -961,13 +962,27 @@ safecount
 noi di "DROP IF DIED BEFORE INDEX"
 
 *fix death dates
+order patient_id age hh_id hh_size case case_date indexdate onsdeath_date cpnsdeath_date 
+*need to sort out deathdates
+local vars case_date onsdeath_date cpnsdeath_date
+
+foreach var of local vars {
+	confirm string variable `var'
+	rename `var' `var'_dstr
+	gen `var' = date(`var'_dstr, "YMD")
+	drop `var'_dstr
+	format `var' %td 
+}
+
+
 drop if onsdeath_date <= indexdate
 drop if cpnsdeath_date <= indexdate
 
 safecount 
-
 sort patient_id
-save "$Tempdir/analysis_dataset.dta", replace
+save hh_analysis_dataset_DRAFT, replace
+
+/*
 
 ****************************************************************
 *  Create outcome specific datasets for the whole population  *
