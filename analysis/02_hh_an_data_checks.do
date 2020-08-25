@@ -3,7 +3,7 @@ DO FILE NAME:			02_an_data_checks
 PROJECT:				Ethnicity and COVID
 AUTHOR:					K Wing adapted from Rohini Mathur, H Forbes, A Wong, A Schultze, C Rentsch
 						 K Baskharan, E Williamson
-DATE: 					19th August 2020
+DATE: 					25th August 2020
 DESCRIPTION OF FILE:	Run sanity checks on all variables
 							- Check variables take expected ranges 
 							- Cross-check logical relationships 
@@ -132,7 +132,7 @@ safetab chronic_cardiac_disease
 safetab cancer
 safetab chronic_liver_disease
 safetab dm_type
-safetab immunosuppressed
+*safetab immunosuppressed
 safetab other_neuro
 safetab dementia
 safetab stroke
