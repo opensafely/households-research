@@ -5,8 +5,13 @@ DO FILE NAME: master.do
 ======================================================================================================================================================================================*/
 *update the number version based on which version of my do files I am on
 
-*AT THE OFFICE:
+/*
+*LOCAL:
 cd /Users/kw/Documents/GitHub/households-research/analysis
+*/
+
+*SERVER:
+cd E:\cohorts\households-research\analysis
 
 
 *set up my global file paths
