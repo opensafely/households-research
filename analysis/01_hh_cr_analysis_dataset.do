@@ -25,6 +25,13 @@ use inputWithHHDependencies.dta, clear
 */
 
 cd ${outputData}
+clear all
+/*
+import delimited "E:\cohorts\households-research\output\input.csv", encoding(ISO-8859-2)
+save input.dta, replace
+*/
+use input.dta, clear
+
 
 * Open a log file
 cap log close
@@ -227,6 +234,16 @@ safetab hh_total_cat,m
 safetab hh_total_cat care_home_type,m
 
 tab hh_size hh_total_cat,m
+
+*drop households we don't need i.e. 1 or smaller or larger than 10
+drop if hh_size<=1
+drop if hh_size>10
+tab hh_size
+
+*rename case date
+rename primary_care_case caseDate
+generate case=0
+replace case=1 if caseDate!=""
 
 ****************************
 *  Create required cohort  *
@@ -679,8 +696,10 @@ covid_primary_care_sequalae
 
 *Think we only need the outcome that is the 3 primary types of probable primary care codes
 	
-*order variables
-order patient_id age hh_id hh_size caseDate
+*drop households with one person or more than 9, order and rename variables
+tab hh_size
+
+order patient_id age hh_id hh_size caseDate ethnicity indexdate
 ren caseDate case_date
 
 ren primary_care_suspect_case	suspected_date
@@ -739,7 +758,7 @@ foreach i of global outcomes {
 		safetab `i'
 }
 
-order patient_id age hh_id hh_size case case_date
+order patient_id age hh_id hh_size case case_date ethnicity
 
 /*
 drop severe
@@ -809,6 +828,7 @@ graph export "$Tabfigdir/outcome_`i'_freq.svg", as(svg) replace
 
 /* LABEL VARIABLES============================================================*/
 *  Label variables you are intending to keep, drop the rest 
+*KW note: for the first run of this, I am just going to keep the bare minimum variables and then can come back and add more
 
 *HH variable
 label var  hh_size "# people in household"
@@ -983,7 +1003,10 @@ drop if cpnsdeath_date <= indexdate
 
 safecount 
 sort patient_id
-save hh_analysis_dataset_DRAFT, replace
+save hh_analysis_datasetALLVARS.dta, replace
+*save a restricted dataset for initial analysis
+keep patient_id age hh_id hh_size case_date case ethnicity indexdate
+save hh_analysis_datasetREDVARS.dta, replace
 
 /*
 

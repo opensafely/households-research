@@ -108,9 +108,22 @@ save inputWithHHDependencies.dta, replace
 
 
 *have a quick look at the data
-count
+*how many households
 tab hh_size
-codebook hh_id
+codebook hh_id /*5,295,872*/
+*how many with no cases
+*count houses with at least one case
+gsort hh_id -case
+generate atLeastone=.
+by hh_id:replace atLeastone=1 if case[1]==1
+replace atLeastone=0 if atLeastone==.
+*drop duplicate hh_ids
+duplicates drop hh_id, force
+count
+tab atLeastone
+
+replace 
+
 
 
 

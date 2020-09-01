@@ -1,18 +1,13 @@
 /*==============================================================================
 DO FILE NAME:			02_an_data_checks
-PROJECT:				Ethnicity and COVID
-AUTHOR:					K Wing adapted from Rohini Mathur, H Forbes, A Wong, A Schultze, C Rentsch
-						 K Baskharan, E Williamson
+PROJECT:				Households and COVID
+AUTHOR:					K Wing
 DATE: 					25th August 2020
-DESCRIPTION OF FILE:	Run sanity checks on all variables
-							- Check variables take expected ranges 
-							- Cross-check logical relationships 
-							- Explore expected relationships 
-							- Check stsettings 
-							- KW added: plots histograms of distribution of cases over time by household size
-DATASETS USED:			$tempdir\`analysis_dataset'.dta
+DESCRIPTION OF FILE:	Outputs sanity checking histograms of secondary cases by household size, also by date and ethnicity
+
+DATASETS USED:			hh_analysis_datasetREDVARS
 DATASETS CREATED: 		None
-OTHER OUTPUT: 			Log file: $logdir\02_an_data_checks
+OTHER OUTPUT: 			Log file: $logdir\02_an_hist_descriptive_plots
 
 cd ${outputData}
 clear all
@@ -22,7 +17,7 @@ use hh_analysis_dataset_DRAFT.dta, clear
 
 * Open a log file
 cap log close
-log using "02_an_data_checks", replace t
+log using "02_an_hist_descriptive_plots", replace t
 
 
 cd ${outputData}
@@ -30,9 +25,7 @@ clear all
 use hh_analysis_datasetREDVARS.dta, clear
 
 
-*how many households in total, and how many have at least one case
-*have a quick look at the data
-*how many households
+*=================0 how many households in total, and how many have at least one case=============
 tab hh_size
 codebook hh_id /*5,295,872*/
 *how many with no cases
@@ -45,8 +38,17 @@ replace atLeastone=0 if atLeastone==.
 duplicates drop hh_id, force
 count
 tab atLeastone
+tab hh_size atLeastone
 
-**descriptive histograms as per meeting on Fri 28th***
+*quick look at household size distribution for those with cases
+
+
+
+
+
+
+
+*=======================1 descriptive histograms as per meeting on Fri 28th=======================
 /*
 Outputs discussed:
 1. Histograms of distribution of secondary cases over time by each household size
@@ -54,21 +56,64 @@ Outputs discussed:
 3. Then summarise these by ethnicity
 
 */
+
+
+*program that outputs histogram with bins that represent less than 5 people redacted, takes household size as a parameter, saves with title as household size
+program redactedHist
+	hist case_date if hh_size==`1', width(5) frequency tlabel(01feb2020 01apr2020 01jun2020 01aug2020, format(%tdmd))
+	*serset command loads the data underlying the graph into memory
+	serset use, clear
+	generate cases=__000000
+	generate case_date=__000002
+	format case_date %td
+	expand cases
+	sort case_date
+	drop if cases<5
+	drop if cases==.
+	count
+	hist case_date, width(5) frequency tlabel(01feb2020 01apr2020 01jun2020 01aug2020, format(%tdmd)) saving(`1', replace) title (Household size: `1', size (medium)) subtitle(n=`r(N)', size (medium))
+	*check no bins under 5
+	serset use, clear
+	list 
+end
+
+
+
+*create a single combined pdf of all the (<5 redacted) histograms
+use hh_analysis_datasetREDVARS.dta, clear
+
 *keep only cases for this descriptive analysis
 keep if case==1
-*drop cases that are dates prior to Jan012020
-drop if case_date<date("20200101", "YMD")
-*overall histograms
-hist case_date
-*by household size
-hist case_date if hh_size==2
-hist case_date if hh_size==3
-hist case_date if hh_size==4
-hist case_date if hh_size==5
-hist case_date if hh_size==6
-hist case_date if hh_size==7
-hist case_date if hh_size==8
-hist case_date if hh_size==9
+*drop cases that are dates prior to Feb012020
+drop if case_date<date("20200201", "YMD")
+
+tempfile forHistOutput
+save `forHistOutput'
+
+*macro for number of houshold sizes
+levelsof hh_size, local(levels)
+foreach l of local levels {
+	use `forHistOutput', clear
+	
+	*call redactedHist program
+	redactedHist `l'
+}
+gr combine 2.gph 3.gph 4.gph 5.gph 
+gr export caseDistByHHSizes2-5.pdf, replace
+gr combine 6.gph 7.gph 8.gph 9.gph 
+gr export caseDistByHHSizes6-9.pdf, replace
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
