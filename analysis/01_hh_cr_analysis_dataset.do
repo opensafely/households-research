@@ -1005,7 +1005,7 @@ safecount
 sort patient_id
 save hh_analysis_datasetALLVARS.dta, replace
 *save a restricted dataset for initial analysis
-keep patient_id age hh_id hh_size case_date case ethnicity indexdate
+keep patient_id age hh_id hh_size case_date case eth16 eth5 ethnicity_16 indexdate
 save hh_analysis_datasetREDVARS.dta, replace
 
 /*

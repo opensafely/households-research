@@ -59,8 +59,8 @@ Outputs discussed:
 
 
 *program that outputs histogram with bins that represent less than 5 people redacted, takes household size as a parameter, saves with title as household size
-program redactedHist
-	hist case_date if hh_size==`1', width(5) frequency tlabel(01feb2020 01apr2020 01jun2020 01aug2020, format(%tdmd))
+program redactedTimeSeriesHist
+	hist `1' if hh_size==`2', width(5) frequency tlabel(01feb2020 01apr2020 01jun2020 01aug2020, format(%tdmd))
 	*serset command loads the data underlying the graph into memory
 	serset use, clear
 	generate cases=__000000
@@ -71,7 +71,7 @@ program redactedHist
 	drop if cases<5
 	drop if cases==.
 	count
-	hist case_date, width(5) frequency tlabel(01feb2020 01apr2020 01jun2020 01aug2020, format(%tdmd)) saving(`1', replace) title (Household size: `1', size (medium)) subtitle(n=`r(N)', size (medium))
+	hist `1', width(5) frequency tlabel(01feb2020 01apr2020 01jun2020 01aug2020, format(%tdmd)) saving(`1', replace) title (Household size: `1', size (medium)) subtitle(n=`r(N)', size (medium))
 	*check no bins under 5
 	serset use, clear
 	list 
@@ -79,7 +79,7 @@ end
 
 
 
-*create a single combined pdf of all the (<5 redacted) histograms
+****(a) Set 1 of histograms: case date (time series) by household size across the entire time period******
 use hh_analysis_datasetREDVARS.dta, clear
 
 *keep only cases for this descriptive analysis
@@ -90,13 +90,14 @@ drop if case_date<date("20200201", "YMD")
 tempfile forHistOutput
 save `forHistOutput'
 
+*create a single combined pdf of all the (<5 redacted) histograms
 *macro for number of houshold sizes
 levelsof hh_size, local(levels)
 foreach l of local levels {
 	use `forHistOutput', clear
 	
 	*call redactedHist program
-	redactedHist `l'
+	redactedTimeSeriesHist case_date `l'
 }
 gr combine 2.gph 3.gph 4.gph 5.gph 
 gr export caseDistByHHSizes2-5.pdf, replace
@@ -104,6 +105,85 @@ gr combine 6.gph 7.gph 8.gph 9.gph
 gr export caseDistByHHSizes6-9.pdf, replace
 
 
+
+
+****(b) Set 2 of histograms: distribution of total number of cases by household size, by ethnicity to start with
+program redactedHHCasesHistByEthnicity
+	if `3'==1  { 
+		local ethnicity="White"
+	}
+	else if `3'==2  { 
+		local ethnicity="South_Asian"
+	}
+	else if `3'==3  { 
+		local ethnicity="Black"
+	}
+	hist `1' if hh_size==`2' & eth5==`3', frequency addlabels discrete xlabel(1(1)`2') title (Household size: `2', size (medium)) subtitle(`ethnicity', size (medium)) saving(`2'_`ethnicity', replace)
+	*serset command loads the data underlying the graph into memory
+	serset use, clear
+	generate freq=__000000
+	generate totCasesInHH=__000002
+	drop if totCasesInHH<1
+	expand freq
+	sort totCasesInHH
+	drop if freq<5
+	hist `1', frequency addlabels discrete xlabel(1(1)`2') title (Household size: `2', size (medium)) subtitle(`ethnicity', size (medium)) saving(`2'_`ethnicity', replace)
+	*check no bins under 5
+	serset use, clear
+	list 
+end
+
+/*
+e.g. in a household size of 4, how many houses had 1 case, how many had 2, how many had 3, how many had 4
+-so instead of case_date as the parameter, I want number of cases in the household
+*/ 
+use hh_analysis_datasetREDVARS.dta, clear
+
+*keep only cases for this descriptive analysis
+keep if case==1
+*drop cases that are dates prior to Feb012020
+drop if case_date<date("20200201", "YMD")
+
+*first of all, create a number of cases in the household variable
+bysort hh_id:egen totCasesInHH=total(case)
+
+redactedHHCasesHistByEthnicity totCasesInHH 4 1
+
+
+*now all ethnicities - I want single pdfs each with three graphs on: white, black, south asian for each household size
+use hh_analysis_datasetREDVARS.dta, clear
+
+*keep only cases for this descriptive analysis
+keep if case==1
+*drop cases that are dates prior to Feb012020
+drop if case_date<date("20200201", "YMD")
+
+*first of all, create a number of cases in the household variable
+bysort hh_id:egen totCasesInHH=total(case)
+
+tempfile forHistOutput
+save `forHistOutput'
+
+*create a single combined pdf of all the (<5 redacted) histograms
+*macro for number of houshold sizes
+	
+
+levelsof hh_size, local(levels)
+foreach l of local levels {
+	
+	
+	*histogram showing distribution of total number of cases in household by ethnicity
+	use `forHistOutput', clear
+	redactedHHCasesHistByEthnicity totCasesInHH `l' 1	/*white*/
+	use `forHistOutput', clear
+	redactedHHCasesHistByEthnicity totCasesInHH `l' 2   /*south asian*/
+	use `forHistOutput', clear
+	redactedHHCasesHistByEthnicity totCasesInHH `l' 3	/*black*/
+	
+	*combine into single pdfs
+	gr combine `l'_white.gph `l'_south_asian.gph `l'_black.gph
+	gr export totCasesinHHsize`l'ByEthnicity.pdf, replace
+}
 
 
 
