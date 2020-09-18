@@ -1,11 +1,11 @@
 /*==============================================================================
-DO FILE NAME:			05a_eth_table1_descriptives_eth16
-PROJECT:				Ethnicity and COVID-19 
-DATE: 					14 July 2020 
-AUTHOR:					R Mathur
-						adapted from A Schultze 	
+DO FILE NAME:			05b_eth_table1_descriptives_eth5
+PROJECT:				Household transmission analysis 
+DATE: 					25 August 2020 
+AUTHOR:					K Wing
+						adapted from R Mathur	
 DESCRIPTION OF FILE:	Produce a table of baseline characteristics, by ethnicity
-						Generalised to produce same columns as levels of eth16
+						Generalised to produce same columns as levels of eth5
 						Output to a textfile for further formatting
 DATASETS USED:			$Tempdir\analysis_dataset.dta
 DATASETS CREATED: 		None
@@ -23,16 +23,24 @@ USER-INSTALLED ADO:
  A&E admission for COVID-19
  ICU admission for COVID-19
  
+sysdir set PLUS "/Users/kw/Documents/GitHub/households-research/analysis/adofiles" 
+sysdir set PERSONAL "/Users/kw/Documents/GitHub/households-research/analysis/adofiles" 
+
+cd ${outputData}
+clear all
+
+
+ 
 
  ==============================================================================*/
 
 * Open a log file
 capture log close
-log using "$Logdir/05a_eth_table1_descriptives_eth16", replace t
+log using "05_hh_cr_table1_descriptives.log", replace t
 
 * Open Stata dataset
-use $Tempdir/analysis_dataset, clear
-safetab eth16,m 
+use hh_analysis_dataset_DRAFT, clear
+*safetab eth5,m 
 
  /* PROGRAMS TO AUTOMATE TABULATIONS===========================================*/ 
 
@@ -50,15 +58,17 @@ syntax, variable(varname) condition(string)
 	sum `variable' if `variable' `condition'
 	file write tablecontent (r(max)) _tab
 	
+	/*this is the overall column*/
 	cou if `variable' `condition'
 	local rowdenom = r(N)
 	local colpct = 100*(r(N)/`overalldenom')
 	file write tablecontent %9.0gc (`rowdenom')  (" (") %3.1f (`colpct') (")") _tab
 
-	forvalues i=1/12{
-	cou if eth16 == `i'
+	/*this loops through groups*/
+	forvalues i=1/6{
+	cou if eth5 == `i'
 	local rowdenom = r(N)
-	cou if eth16 == `i' & `variable' `condition'
+	cou if eth5 == `i' & `variable' `condition'
 	local pct = 100*(r(N)/`rowdenom') 
 	file write tablecontent %9.0gc (r(N)) (" (") %3.1f (`pct') (")") _tab
 	}
@@ -69,22 +79,22 @@ end
 
 * Output one row of table for co-morbidities and meds
 
-cap prog drop generaterow2
+cap prog drop generaterow2 /*this puts it all on the same row, is rohini's edit*/
 program define generaterow2
 syntax, variable(varname) condition(string) 
 	
 	cou
-	local overalldenom=r(N)
+	local overalldenom=r(N)5
 	
 	cou if `variable' `condition'
 	local rowdenom = r(N)
 	local colpct = 100*(r(N)/`overalldenom')
 	file write tablecontent %9.0gc (`rowdenom')  (" (") %3.1f (`colpct') (")") _tab
 
-	forvalues i=1/12{
-	cou if eth16 == `i'
+	forvalues i=1/6{
+	cou if eth5 == `i'
 	local rowdenom = r(N)
-	cou if eth16 == `i' & `variable' `condition'
+	cou if eth5 == `i' & `variable' `condition'
 	local pct = 100*(r(N)/`rowdenom') 
 	file write tablecontent %9.0gc (r(N)) (" (") %3.1f (`pct') (")") _tab
 	}
@@ -164,8 +174,8 @@ syntax, variable(varname)
 	file write tablecontent ("Mean (SD)") _tab 
 	file write tablecontent  %3.1f (r(mean)) (" (") %3.1f (r(sd)) (")") _tab
 	
-	forvalues i=1/12{							
-	qui summarize `variable' if eth16 == `i', d
+	forvalues i=1/6{							
+	qui summarize `variable' if eth5 == `i', d
 	file write tablecontent  %3.1f (r(mean)) (" (") %3.1f (r(sd)) (")") _tab
 	}
 
@@ -176,8 +186,8 @@ file write tablecontent _n
 	file write tablecontent ("Median (IQR)") _tab 
 	file write tablecontent %3.1f (r(p50)) (" (") %3.1f (r(p25)) ("-") %3.1f (r(p75)) (")") _tab
 	
-	forvalues i=1/12{
-	qui summarize `variable' if eth16 == `i', d
+	forvalues i=1/6{
+	qui summarize `variable' if eth5 == `i', d
 	file write tablecontent %3.1f (r(p50)) (" (") %3.1f (r(p25)) ("-") %3.1f (r(p75)) (")") _tab
 	}
 	
@@ -189,24 +199,18 @@ end
 
 *Set up output file
 cap file close tablecontent
-file open tablecontent using $Tabfigdir/table1_eth16.txt, write text replace
+file open tablecontent using $Tabfigdir/table1_eth5.txt, write text replace
 
 file write tablecontent ("Table 1: Demographic and Clinical Characteristics") _n
 
-* eth16 labelled columns
+* eth5 labelled columns *THESE WOULD BE HOUSEHOLD LABELS, eth5 is the equivqlent of the hh size variable
 
-local lab1: label eth16 1
-local lab2: label eth16 2
-local lab3: label eth16 3
-local lab4: label eth16 4
-local lab5: label eth16 5
-local lab6: label eth16 6
-local lab7: label eth16 7
-local lab8: label eth16 8
-local lab9: label eth16 9
-local lab10: label eth16 10
-local lab11: label eth16 11
-local lab12: label eth16 12
+local lab1: label eth5 1
+local lab2: label eth5 2
+local lab3: label eth5 3
+local lab4: label eth5 4
+local lab5: label eth5 5
+local lab6: label eth5 6
 
 
 
@@ -216,14 +220,7 @@ file write tablecontent _tab ("Total")				  			  _tab ///
 							 ("`lab3'")  						  _tab ///
 							 ("`lab4'")  						  _tab ///
 							 ("`lab5'")  						  _tab ///
-							 ("`lab6'")  						  _tab ///
-							 ("`lab7'")  						  _tab ///
-							 ("`lab8'")  						  _tab ///
-							 ("`lab9'")  						  _tab ///
-							 ("`lab10'")  						  _tab ///
-							 ("`lab11'")  						  _tab ///
-							 ("`lab12'")  						  _n 
-							 
+							 ("`lab6'")  						  _n 							 
 							 
 
 
@@ -237,6 +234,15 @@ tabulatevariable, variable(cons) min(1) max(1)
 file write tablecontent _n 
 
 *SIZE OF LINKED DATASETS
+gen  byte SGSS=1 if tested==1
+
+file write tablecontent ("SGSS data") _tab
+generaterow2, variable(SGSS) condition("==1")
+
+gen  byte ICNARC=1 if tested==1
+file write tablecontent ("ICNARC data") _tab
+generaterow2, variable(ICNARC) condition("==1")
+
 qui summarizevariable, variable(age) 
 file write tablecontent _n
 
@@ -343,4 +349,4 @@ file close tablecontent
 log close
 
 clear
-insheet using "$Tabfigdir/table1_eth16.txt", clear
+insheet using "$Tabfigdir/table1_eth5.txt", clear
