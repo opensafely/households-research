@@ -30,7 +30,7 @@ None
 
 clear
 
-/*
+
 *LOCAL (FOR DUMMY DATA)
 global Projectdir "/Users/kw/Documents"
 
@@ -44,12 +44,13 @@ sysdir set PLUS "/Users/kw/Documents/GitHub/households-research/analysis/adofile
 sysdir set PERSONAL "/Users/kw/Documents/GitHub/households-research/analysis/adofiles"
 
 set more off, perm
-*/
+
 
 
 
 
 *SERVER (FOR LIVE DATA)
+/*
 global Projectdir "E:\cohorts\households-research"
 
 *global codes "$Projectdir\00_codes"
@@ -61,6 +62,7 @@ sysdir set PLUS "$Projectdir\analysis\adofiles"
 sysdir set PERSONAL "$Projectdir\analysis\adofiles"
 
 set more off, perm
+*/
 
 
 
