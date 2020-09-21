@@ -1,7 +1,7 @@
 /*==============================================================================
 DO FILE NAME:			06a_eth_an_multivariable_eth16
 PROJECT:				Ethnicity and COVID
-AUTHOR:					R Mathur (modified from A wong and A Schultze)
+AUTHOR:					K Wing (modified from R Mathur, A wong and A Schultze)
 DATE: 					15 July 2020					
 DESCRIPTION OF FILE:	program 06 
 						univariable regression
@@ -13,6 +13,118 @@ OTHER OUTPUT: 			logfiles, printed to folder analysis/$logdir
 						complete case analysis	
 ==============================================================================*/
 
+
+
+/*"quick" univariable and multivariable regression based upon DAG and all variables listed in protocol, will need to go back and prepare a table 1 and then check these results
+- Look at 2 different main exposures: (1) household size (2) household composition
+*/
+
+*first of all, create a household composition variable that is "age category x in household size y"
+*based on age categories and household sizes, there will be 12 x 9 = 108  possible categories
+*first, create the categorical age that I want: 0-4, 5-9, 10-14, 15-19, 20-29, 30-39, 40-49, 50-59, 60-69, 70-79, 80-89, 90+
+*(1) Household size exposure
+cd ${outputData}
+clear all
+use hh_analysis_datasetALLVARS.dta, clear
+*create the age variable that I want
+egen ageCat=cut(age), at (0, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 120)
+recode ageCat 0=1 5=2 10=3 15=4 20=5 30=6 40=7 50=8 60=9 70=10 80=11 90=12 
+label define ageCatLabel 1 "0-4" 2 "5-9" 3 "10-14" 4 "15-19" 5 "20-29" 6 "30-39" 7 "40-49" 8 "50-59" 9 "60-69" 10 "70-79" 11 "80-89" 12 "90+"
+label values ageCat ageCatLabel
+tab ageCat, miss
+la var ageCat "Categorised age"
+*now creat the household composition variable that takes account of age of the person and the size of the house that they are in
+*this doesn't take account of the ages of the other people in the house though?
+generate hh_composition=.
+la var hh_composition "Combination of person's age and household size'"
+levelsof ageCat, local(ageLevels)
+local count=0
+foreach l of local ageLevels {
+	levelsof hh_size, local(hh_sizeLevels)
+	foreach m of local hh_sizeLevels {
+		local count=`count'+1
+		display `count'
+		replace hh_composition=`count' if ageCat==`l' & hh_size==`m'
+	}	
+}
+order age hh_size hh_composition
+tab hh_composition
+
+
+*(A) CRUDE ASSOCIATIONS
+
+*crude association between household size and COVID-19 infection (not including death at this stage)
+logistic case i.hh_size, or base
+
+*crude association between household composition and COVID-19 infection
+logistic case i.hh_composition, or base
+
+
+
+*(B) MULTIVARIABLE ASSOCIATIONS BASED UPON DAG/protocol list
+*crude first
+logistic case i.hh_size, or base
+*adjusted for age
+logistic case i.hh_size age, or base
+*adjusted for all variables in DAG/protocol list except comorbidities, shielding behaviour
+/*i.e. 
+	age, sex, BMI, smoking, IMD, geographical variation, ethnicity
+*/
+tab sex
+generate sex2=.
+replace sex2=0 if sex=="F"
+replace sex2=1 if sex=="M"
+tab sex2
+label define sex2Label 0 "F" 1 "M"
+label values sex2 sex2Label
+
+tab bmicat /*not quite what we have in the protocol, lots of missing*/
+tab smoke
+tab imd
+tab region
+generate region2=.
+replace region2=0 if region=="East"
+replace region2=1 if region=="East Midlands"
+replace region2=2 if region=="London"
+replace region2=3 if region=="North East"
+replace region2=4 if region=="North West"
+replace region2=5 if region=="South East"
+replace region2=6 if region=="South West"
+replace region2=7 if region=="West Midlands"
+replace region2=8 if region=="Yorkshire and The Humber"
+label define region2Label 0 "East" 1 "East Midlands"  2 "London" 3 "North East" 4 "North West" 5 "South East" 6 "South West" 7 "West Midlands" 8 "Yorkshire and The Humber"
+label values region2 region2Label
+
+*multivariable for hh_size
+tab eth5
+logistic case i.hh_size age i.sex2 i.bmicat i.smoke i.imd i.region2 i.eth5, or base
+
+*multivariable for hh_composition
+logistic case i.hh_composition, or base
+logistic case i.hh_composition i.sex2 i.bmicat i.smoke i.imd i.region2 i.eth5, or base
+
+logistic case i.hh_size age i.sex2 i.bmicat i.smoke i.imd i.region2 i.eth5, or base
+
+
+logistic case i.hh_composition ageCat i.sex2 i.bmicat i.smoke i.imd i.region2 i.eth5, or base
+
+
+logistic case i.hh_composition age i.sex2 i.bmicat i.smoke i.imd i.region2 i.eth5, or base
+
+
+
+
+*now add all likely confounders based on DAG/list from protocol
+/*these are:
+	
+*/
+
+
+
+
+
+
+/*Code for outputting tables as well that I need to come back to*/
 * Open a log file
 
 cap log close
