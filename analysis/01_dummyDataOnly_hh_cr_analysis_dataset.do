@@ -1006,9 +1006,102 @@ sort patient_id
 save hh_analysis_datasetALLVARS.dta, replace
 
 
-*save a restricted dataset that only contains variables for the regression analysis for sharing with Thomas and Heather
-keep patient_id age hh_id hh_size case_date case eth16 eth5 ethnicity_16 indexdate
+*edited dataset that only contains variables for the regression analysis for sharing with Thomas and Heather
+*create the age variable that I want
+egen ageCat=cut(age), at (0, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 120)
+recode ageCat 0=1 5=2 10=3 15=4 20=5 30=6 40=7 50=8 60=9 70=10 80=11 90=12 
+label define ageCatLabel 1 "0-4" 2 "5-9" 3 "10-14" 4 "15-19" 5 "20-29" 6 "30-39" 7 "40-49" 8 "50-59" 9 "60-69" 10 "70-79" 11 "80-89" 12 "90+"
+label values ageCat ageCatLabel
+tab ageCat, miss
+la var ageCat "Categorised age"
+*now creat the household composition variable that takes account of age of the person and the size of the house that they are in
+*this doesn't take account of the ages of the other people in the house though?
+generate hh_composition=.
+la var hh_composition "Combination of person's age and household size'"
+levelsof ageCat, local(ageLevels)
+local count=0
+foreach l of local ageLevels {
+	levelsof hh_size, local(hh_sizeLevels)
+	foreach m of local hh_sizeLevels {
+		local count=`count'+1
+		display `count'
+		replace hh_composition=`count' if ageCat==`l' & hh_size==`m'
+	}	
+}
+order age hh_size hh_composition
+tab hh_composition
+
+*sort out sex and region etc
+tab sex
+generate sex2=.
+replace sex2=0 if sex=="F"
+replace sex2=1 if sex=="M"
+tab sex2
+label define sex2Label 0 "F" 1 "M"
+label values sex2 sex2Label
+
+*sort out region
+generate region2=.
+replace region2=0 if region=="East"
+replace region2=1 if region=="East Midlands"
+replace region2=2 if region=="London"
+replace region2=3 if region=="North East"
+replace region2=4 if region=="North West"
+replace region2=5 if region=="South East"
+replace region2=6 if region=="South West"
+replace region2=7 if region=="West Midlands"
+replace region2=8 if region=="Yorkshire and The Humber"
+label define region2Label 0 "East" 1 "East Midlands"  2 "London" 3 "North East" 4 "North West" 5 "South East" 6 "South West" 7 "West Midlands" 8 "Yorkshire and The Humber"
+label values region2 region2Label
+
+drop sex
+rename sex2 sex
+drop region
+rename region2 region
+label var case_date "date of case"
+label var region "region of England"
+
+*create dummy variables shielding
+generate shielding=.
+la var shielding "shielding status"
+
+*create dummy variables comorbidities that are not there already
+generate comorb_Neuro=.
+la var comorb_Neuro "comorbidity  - grouped neurological diseases"
+generate comorb_ImmunoSuppr=.
+la var comorb_ImmunoSuppr "comorbidity - grouped immunosuppression or autoimmune disease"
+
+*keep the variables I need from this dataset, also need to create the dummy variables: shielding and comorbidities
+keep patient_id age hh_id hh_size hh_composition case_date case eth5 indexdate sex bmicat smoke imd region comorb_Neuro comorb_ImmunoSuppr shielding chronic_respiratory_disease chronic_cardiac_disease diabetes chronic_liver_disease cancer egfr_cat hypertension
+
+
 save hh_analysis_datasetREDVARS.dta, replace
+
+*append together 4 of these to send to Thomas and Heather
+use hh_analysis_datasetREDVARS.dta
+save hh_analysis_datasetREDVARS2.dta, replace
+save hh_analysis_datasetREDVARS3.dta, replace 
+save hh_analysis_datasetREDVARS4.dta, replace
+
+use hh_analysis_datasetREDVARS.dta, clear
+append using hh_analysis_datasetREDVARS2.dta
+append using hh_analysis_datasetREDVARS3.dta
+append using hh_analysis_datasetREDVARS4.dta
+generate patient_idNew=.
+replace patient_idNew=_n
+rename patient_id Orig_patient_id
+rename patient_idNew patient_id
+count
+save 17millionDummyData.dta, replace
+
+*create a file of variable names
+use 17millionDummyData.dta, clear
+preserve
+    describe, replace
+    list
+    export excel using varDescriptions.xlsx, replace first(var)
+restore
+
 
 /*
 
