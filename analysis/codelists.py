@@ -5,17 +5,29 @@ from cohortextractor import (
 
 covid_codelist = codelist(["U071", "U072"], system="icd10")
 
-aplastic_codes = codelist_from_csv(
-    "codelists/opensafely-aplastic-anaemia.csv", system="ctv3", column="CTV3ID"
-)
+confirmed_covid_codelist = codelist(["U071"], system="icd10")
 
-covid_primary_care_case = codelist_from_csv(
+suspected_covid_codelist = codelist(["U072"], system="icd10")
+
+covid_primary_care_positive_test=codelist_from_csv(
     "codelists/opensafely-covid-identification-in-primary-care-probable-covid-positive-test.csv",
     system="ctv3", 
     column="CTV3ID",
 )
 
-covid_primary_exposure = codelist_from_csv(
+covid_primary_care_code=codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-probable-covid-clinical-code.csv",
+    system="ctv3", 
+    column="CTV3ID",
+)
+
+covid_primary_care_sequalae=codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-probable-covid-sequelae.csv",
+    system="ctv3",
+    column="CTV3ID",
+)
+
+covid_primary_care_exposure = codelist_from_csv(
     "codelists/opensafely-covid-identification-in-primary-care-exposure-to-disease.csv", 
     system="ctv3", 
     column="CTV3ID",
@@ -32,10 +44,34 @@ covid_primary_care_potential_historic_case = codelist_from_csv(
     system="ctv3", 
     column="CTV3ID",
 )
-covid_primary_care_suspect_case = codelist_from_csv(
-    "codelists/opensafely-covid-identification-in-primary-care-probable-covid-clinical-code.csv",
+
+covid_suspected_code = codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-suspected-covid-suspected-codes.csv", 
     system="ctv3", 
     column="CTV3ID",
+)
+
+covid_suspected_111 = codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-helper-111-suspected.csv",
+    system="ctv3",
+    column="CTV3ID",
+)
+
+covid_suspected_advice = codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-suspected-covid-advice.csv",
+    system="ctv3",
+    column="CTV3ID",
+)
+
+covid_suspected_test = codelist_from_csv(
+    "codelists/opensafely-covid-identification-in-primary-care-suspected-covid-had-test.csv",  
+    system="ctv3",
+    column="CTV3ID",
+)
+
+
+aplastic_codes = codelist_from_csv(
+    "codelists/opensafely-aplastic-anaemia.csv", system="ctv3", column="CTV3ID"
 )
 
 hiv_codes = codelist_from_csv(
@@ -60,20 +96,6 @@ stroke = codelist_from_csv(
 
 dementia = codelist_from_csv(
     "codelists/opensafely-dementia.csv", system="ctv3", column="CTV3ID"
-)
-
-clear_smoking_codes = codelist_from_csv(
-    "codelists/opensafely-smoking-clear.csv",
-    system="ctv3",
-    column="CTV3Code",
-    category_column="Category",
-)
-
-unclear_smoking_codes = codelist_from_csv(
-    "codelists/opensafely-smoking-unclear.csv",
-    system="ctv3",
-    column="CTV3Code",
-    category_column="Category",
 )
 
 other_neuro = codelist_from_csv(
@@ -101,7 +123,7 @@ chronic_respiratory_disease_codes = codelist_from_csv(
 )
 
 asthma_codes = codelist_from_csv(
-    "codelists/opensafely-asthma-diagnosis.csv", system="ctv3", column="CTV3ID"
+    "codelists/opensafely-current-asthma.csv", system="ctv3", column="CTV3ID"
 )
 
 salbutamol_codes = codelist_from_csv(
@@ -126,10 +148,39 @@ chronic_cardiac_disease_codes = codelist_from_csv(
     "codelists/opensafely-chronic-cardiac-disease.csv", system="ctv3", column="CTV3ID"
 )
 
-diabetes_codes = codelist_from_csv(
-    "codelists/opensafely-diabetes.csv", system="ctv3", column="CTV3ID"
+
+diabetes_t1_codes = codelist_from_csv(
+    "codelists/opensafely-type-1-diabetes.csv", system="ctv3", column="CTV3ID"
 )
 
+diabetes_t2_codes = codelist_from_csv(
+    "codelists/opensafely-type-2-diabetes.csv", system="ctv3", column="CTV3ID"
+)
+
+diabetes_unknown_codes = codelist_from_csv(
+    "codelists/opensafely-diabetes-unknown-type.csv", system="ctv3", column="CTV3ID"
+)
+
+diabetes_t1t2_codes_exeter = codelist_from_csv(
+        "codelists/opensafely-diabetes-exeter-group.csv", 
+        system="ctv3", 
+        column="CTV3ID",
+        category_column="Category",
+)
+
+clear_smoking_codes = codelist_from_csv(
+    "codelists/opensafely-smoking-clear.csv",
+    system="ctv3",
+    column="CTV3Code",
+    category_column="Category",
+)
+
+unclear_smoking_codes = codelist_from_csv(
+    "codelists/opensafely-smoking-unclear.csv",
+    system="ctv3",
+    column="CTV3Code",
+    category_column="Category",
+)
 lung_cancer_codes = codelist_from_csv(
     "codelists/opensafely-lung-cancer.csv", system="ctv3", column="CTV3ID"
 )
@@ -140,16 +191,6 @@ haem_cancer_codes = codelist_from_csv(
 
 other_cancer_codes = codelist_from_csv(
     "codelists/opensafely-cancer-excluding-lung-and-haematological.csv",
-    system="ctv3",
-    column="CTV3ID",
-)
-
-bone_marrow_transplant_codes = codelist_from_csv(
-    "codelists/opensafely-bone-marrow-transplant.csv", system="ctv3", column="CTV3ID"
-)
-
-chemo_radio_therapy_codes = codelist_from_csv(
-    "codelists/opensafely-chemotherapy-or-radiotherapy-updated.csv",
     system="ctv3",
     column="CTV3ID",
 )
@@ -199,4 +240,71 @@ diastolic_blood_pressure_codes = codelist(["246A."], system="ctv3")
 
 hypertension_codes = codelist_from_csv(
     "codelists/opensafely-hypertension.csv", system="ctv3", column="CTV3ID"
+)
+
+# MEDICATION CODELISTS
+ace_codes = codelist_from_csv(
+    "codelists/opensafely-ace-inhibitor-medications.csv",
+    system="snomed",
+    column="id",
+)
+
+alpha_blocker_codes = codelist_from_csv(
+    "codelists/opensafely-alpha-adrenoceptor-blocking-drugs.csv",
+    system="snomed",
+    column="id",
+)
+
+arb_codes = codelist_from_csv(
+    "codelists/opensafely-angiotensin-ii-receptor-blockers-arbs.csv",
+    system="snomed",
+    column="id",
+)
+
+betablocker_codes = codelist_from_csv(
+    "codelists/opensafely-beta-blocker-medications.csv",
+    system="snomed",
+    column="id",
+)
+
+calcium_channel_blockers_codes = codelist_from_csv(
+    "codelists/opensafely-calcium-channel-blockers.csv",
+    system="snomed",
+    column="id",
+)
+
+combination_bp_med_codes = codelist_from_csv(
+    "codelists/opensafely-combination-blood-pressure-medication.csv",
+    system="snomed",
+    column="id",
+)
+
+spironolactone_codes = codelist_from_csv(
+    "codelists/opensafely-spironolactone.csv",
+    system="snomed",
+    column="id",
+)
+
+thiazide_type_diuretic_codes = codelist_from_csv(
+    "codelists/opensafely-thiazide-type-diuretic-medication.csv",
+    system="snomed",
+    column="id",
+)
+
+insulin_med_codes = codelist_from_csv(
+    "codelists/opensafely-insulin-medication.csv", 
+    system="snomed", 
+    column="id"
+)
+
+statin_med_codes = codelist_from_csv(
+    "codelists/opensafely-statin-medication.csv", 
+    system="snomed", 
+    column="id"
+)
+
+oad_med_codes = codelist_from_csv(
+    "codelists/opensafely-antidiabetic-drugs.csv",
+    system="snomed",
+    column="id"
 )
