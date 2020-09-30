@@ -1,0 +1,24 @@
+version: '1.0'
+actions:
+  generate_cohort:
+    run: cohortextractor:latest generate_cohort --output-dir=/workspace
+    outputs:
+      highly_sensitive:
+        cohort: input.csv
+
+  prepare_data:
+    run: stata-mp:latest analysis/01_hh_cr_analysis_dataset.do
+    needs: [generate_cohort]
+    outputs:
+      highly_sensitive:
+        allvars: hh_analysis_datasetALLVARS.dta
+        allvars_csv: hh_analysis_datasetALLVARS.csv
+        redvars: hh_analysis_datasetREDVARS.dta
+
+  descriptive_notebook:
+    run: jupyter:latest jupyter nbconvert /workspace/analysis/opensafely_eda_test_notebook.ipynb --execute --to html --output-dir=/workspace
+    needs: [prepare_data]
+    outputs:
+      moderately_sensitive:
+        notebook: opensafely_eda_test_notebook.html
+
