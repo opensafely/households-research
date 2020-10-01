@@ -21,4 +21,7 @@ actions:
     outputs:
       moderately_sensitive:
         notebook: opensafely_eda_test_notebook.html
+        ages: analysis/ages.pdf
+        hhsize: analysis/hh_sizes.pdf
+        cases: analysis/hh_cases_*.pdf
 
