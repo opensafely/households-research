@@ -19,15 +19,15 @@ clear all
 use hh_analysis_dataset_DRAFT.dta, clear
 							
 ==============================================================================*/
+cd ${outputData}
+clear all
+
 
 * Open a log file
 cap log close
 log using "02_an_data_checks", replace t
 
-
-cd ${outputData}
-clear all
-use hh_analysis_datasetREDVARS.dta, clear
+use hh_analysis_datasetALLVARS.dta, clear
 
 
 *how many households in total, and how many have at least one case

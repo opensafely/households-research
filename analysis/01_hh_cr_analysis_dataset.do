@@ -202,11 +202,6 @@ label values agegroup agegroup
 **************************** HOUSEHOLD VARS*******************************************
 *update with UPRN data
 
-
-*Total number people in household (to check hh size)
-*maximum of 10 people in a household
-bysort hh_id: gen hh_total=_N
-
 sum hh_total hh_size
 *gen categories of household size - KW will use actual household sizes in analysis but will leave this in so easy to find where it is used in Rohini analysis files.
 gen hh_total_cat=.
@@ -239,6 +234,41 @@ tab hh_size hh_total_cat,m
 drop if hh_size<=1
 drop if hh_size>10
 tab hh_size
+
+
+*create household composition variable
+*edited dataset that only contains variables that will be used in the regression analysis (and were for shared in dummydata with Thomas and Heather)
+*create the age variable that I want
+egen ageCat=cut(age), at (0, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 120)
+recode ageCat 0=1 5=2 10=3 15=4 20=5 30=6 40=7 50=8 60=9 70=10 80=11 90=12 
+label define ageCatLabel 1 "0-4" 2 "5-9" 3 "10-14" 4 "15-19" 5 "20-29" 6 "30-39" 7 "40-49" 8 "50-59" 9 "60-69" 10 "70-79" 11 "80-89" 12 "90+"
+label values ageCat ageCatLabel
+tab ageCat, miss
+la var ageCat "Categorised age"
+*now creat the household composition variable that takes account of age of the person and the size of the house that they are in
+*this doesn't take account of the ages of the other people in the house though?
+generate hh_composition=.
+la var hh_composition "Combination of person's age and household size'"
+levelsof ageCat, local(ageLevels)
+local count=0
+foreach l of local ageLevels {
+	levelsof hh_size, local(hh_sizeLevels)
+	foreach m of local hh_sizeLevels {
+		local count=`count'+1
+		display `count'
+		replace hh_composition=`count' if ageCat==`l' & hh_size==`m'
+	}	
+}
+order age hh_size hh_composition
+tab hh_composition
+
+*create a key for the hh composition variable
+preserve
+    describe, replace clear
+    list
+    export excel using hhCompositionKey.xlsx, replace first(var)
+restore
+
 
 *rename case date
 rename primary_care_case caseDate
@@ -933,7 +963,23 @@ lab var betablockers_date 					"Beta blocker in last 12 months"
 lab var calcium_channel_blockers_date 		"CCB in last 12 months"
 lab var combination_bp_meds_date 			"BP med in last 12 months"
 lab var spironolactone_date 				"Spironolactone in last 12 months"
-lab var thiazide_diuretics_date				"TZD in last 12 months"
+lab var 
+
+*combine variables that we decided to combine for the households analysis
+/*in particular
+ - shielding (shielding status)
+ - comorb_Neuro (grouped neurological diseases)
+ - comorb_Immunosuppression (grouped immunosupression or autoimmune disease)
+*/
+generate comorb_Neuro=0
+la var comorb_Neuro "grouped stroke, dementia, other neurological diseases"
+replace comorb_Neuro=1 if stroke==1|dementia==1|other_neuro==1
+generate comorb_Immunosuppression=0
+la var comorb_Immunosuppression "grouped immunosupression or autoimmune diseases"
+replace comorb_Immunosuppression=1 if perm_immunodef==1|temp_immunodef==1|other_immuno==1|ra_sle_psoriasis==1
+*placeholder variable for shielding until I've decided what to do with it i.e. won't it be colinear as is made up of other conditions?
+generate shielding=.
+la var shielding "met criteria for shielding - EMPTY FOR NOW"
 
 * Outcomes and follow-up
 
@@ -1001,12 +1047,56 @@ foreach var of local vars {
 drop if onsdeath_date <= indexdate
 drop if cpnsdeath_date <= indexdate
 
+
+*drop cases that are dates prior to Jan012020
+drop if case_date<date("20200101", "YMD")
+*overall histograms
+hist case_date
+
+
 safecount 
 sort patient_id
 save hh_analysis_datasetALLVARS.dta, replace
-*save a restricted dataset for initial analysis
-keep patient_id age hh_id hh_size case_date case eth16 eth5 ethnicity_16 indexdate
-save hh_analysis_datasetREDVARS.dta, replace
+
+
+*keep the variables I need from the hh analysis
+keep patient_id age hh_id hh_size hh_composition case_date case eth5 eth16 indexdate sex bmicat smoke imd region comorb_Neuro comorb_Immunosuppression shielding chronic_respiratory_disease chronic_cardiac_disease diabetes chronic_liver_disease cancer egfr_cat hypertension
+*save file
+
+
+*some other tweaks to vars (may be handled later but did not want to get rid of this code yet)
+*sort out sex and region etc
+tab sex
+generate sex2=.
+replace sex2=0 if sex=="F"
+replace sex2=1 if sex=="M"
+tab sex2
+label define sex2Label 0 "F" 1 "M"
+label values sex2 sex2Label
+
+*sort out region
+generate region2=.
+replace region2=0 if region=="East"
+replace region2=1 if region=="East Midlands"
+replace region2=2 if region=="London"
+replace region2=3 if region=="North East"
+replace region2=4 if region=="North West"
+replace region2=5 if region=="South East"
+replace region2=6 if region=="South West"
+replace region2=7 if region=="West Midlands"
+replace region2=8 if region=="Yorkshire and The Humber"
+label define region2Label 0 "East" 1 "East Midlands"  2 "London" 3 "North East" 4 "North West" 5 "South East" 6 "South West" 7 "West Midlands" 8 "Yorkshire and The Humber"
+label values region2 region2Label
+
+drop sex
+rename sex2 sex
+drop region
+rename region2 region
+label var case_date "date of case"
+label var region "region of England"
+
+save hh_analysis_dataset.dta, replace
+
 
 /*
 
