@@ -89,18 +89,7 @@ study = StudyDefinition(
         "rate" : "exponential_increase"},
     ),
 
-    # ICU attendance and ventilation
-    was_ventilated_flag=patients.admitted_to_icu(
-    on_or_after="2020-02-01",
-    returning="was_ventilated",
-    return_expectations={
-            "rate": "exponential_increase",
-            "incidence" : 0.20,
-            "date" : {"earliest" : "2020-02-01"},
-            "bool" : True,
-        }
-    ),
-
+    # ICU attendance
     icu_date_admitted=patients.admitted_to_icu(
         on_or_after="2020-02-01",
         include_day=True,
