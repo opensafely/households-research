@@ -27,7 +27,7 @@ clear all
 cap log close
 log using "02_an_data_checks", replace t
 
-use hh_analysis_datasetALLVARS.dta, clear
+use hh_analysis_dataset.dta, clear
 
 
 *how many households in total, and how many have at least one case
@@ -42,38 +42,14 @@ generate atLeastone=.
 by hh_id:replace atLeastone=1 if case[1]==1
 replace atLeastone=0 if atLeastone==.
 *drop duplicate hh_ids
-duplicates drop hh_id, force
-count
-tab atLeastone
-
-**descriptive histograms as per meeting on Fri 28th***
-/*
-Outputs discussed:
-1. Histograms of distribution of secondary cases over time by each household size
-2. Overall and by 2 time periods: March 1 - End April, April 1 - current date (i.e. change in policy, moving from pillar 1 to pillar 2)
-3. Then summarise these by ethnicity
-
-*/
-*keep only cases for this descriptive analysis
-keep if case==1
-*drop cases that are dates prior to Jan012020
-drop if case_date<date("20200101", "YMD")
-*overall histograms
-hist case_date
-*by household size
-hist case_date if hh_size==2
-hist case_date if hh_size==3
-hist case_date if hh_size==4
-hist case_date if hh_size==5
-hist case_date if hh_size==6
-hist case_date if hh_size==7
-hist case_date if hh_size==8
-hist case_date if hh_size==9
+preserve
+	duplicates drop hh_id, force
+	count
+	tab atLeastone
+restore
 
 
 
-
-/* legacy code
 * Open a log file
 
 cap log close
@@ -81,7 +57,7 @@ log using "02_an_data_checks", replace t
 
 *capture log close
 *log using "$Logdir/02_an_data_checks", replace t
-
+*add numeric values to all labels
 numlabel, add
 
 * Open Stata dataset
@@ -113,35 +89,36 @@ cap assert inlist(imd, 1, 2, 3, 4, 5)
 /* EXPECTED VALUES============================================================*/ 
 
 *HH
-summ hh_size hh_linear hh_log_linea
-safetab hh_total_cat, m
+*summ hh_size hh_linear hh_log_linea
+summ hh_size
+safetab hh_size, m
 
 *Care home
-safetab carehome, m
-safetab carehome hh_total_cat, m
+*safetab carehome, m
+*safetab carehome hh_total_cat, m
 
 * Age
 summ age
 datacheck age<., nol
-datacheck inlist(agegroup, 1, 2, 3, 4, 5, 6, 7), nol
+datacheck inlist(ageCat, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), nol
 
 * Sex
-safetab male, m
-datacheck inlist(male, 0, 1), nol
+safetab sex, m
+datacheck inlist(sex, 0, 1), nol
 
 * BMI 
-summ bmi
-safetab obese4cat, m 
-datacheck inlist(obese4cat, 1, 2, 3, 4), nol
+*summ bmi
+*safetab obese4cat, m 
+*datacheck inlist(obese4cat, 1, 2, 3, 4), nol
 
-safetab obese4cat_sa, m
-datacheck inlist(obese4cat_sa, 1, 2, 3, 4), nol
+*safetab obese4cat_sa, m
+*datacheck inlist(obese4cat_sa, 1, 2, 3, 4), nol
 
 safetab bmicat, m
 datacheck inlist(bmicat, 1, 2, 3, 4, 5, 6, .u), nol
 
-safetab bmicat_sa, m
-datacheck inlist(bmicat_sa, 1, 2, 3, 4, 5, 6, .u), nol
+*safetab bmicat_sa, m
+*datacheck inlist(bmicat_sa, 1, 2, 3, 4, 5, 6, .u), nol
 
 * IMD
 summ imd
@@ -152,7 +129,7 @@ datacheck inlist(imd, 1, 2, 3, 4, 5), nol
 safetab ethnicity
 datacheck inlist(ethnicity, 1, 2, 3, 4, 5, 6), nol
 
-safetab eth5,m
+safetab eth5, m
 datacheck inlist(eth5, 1, 2, 3, 4, 5, 6), nol
 
 safetab ethnicity_16,m
@@ -178,25 +155,27 @@ foreach var of varlist  *date {
 **********************************
 
 * Comorbidities
-safetab bpcat
-safetab bpcat, m
-safetab htdiag_or_highbp
+*safetab bpcat
+*safetab bpcat, m
+*safetab htdiag_or_highbp
 safetab chronic_respiratory_disease
-safetab asthma
+*safetab asthma
 safetab chronic_cardiac_disease
 safetab cancer
 safetab chronic_liver_disease
-safetab dm_type
+*safetab dm_type
 *safetab immunosuppressed
-safetab other_neuro
-safetab dementia
-safetab stroke
+*safetab other_neuro
+*safetab dementia
+*safetab stroke
+safetab comorb_Neuro
+safetab comorb_Immunosuppression
 safetab egfr_cat
-safetab egfr60
-safetab esrf
+*safetab egfr60
+*safetab esrf
 safetab hypertension
-safetab ra_sle_psoriasis
-safetab stp
+*safetab ra_sle_psoriasis
+*safetab stp
 safetab region
 safetab rural_urban
 
@@ -204,7 +183,8 @@ safetab rural_urban
 /* LOGICAL RELATIONSHIPS======================================================*/ 
 
 *HH variables
-summ hh_size hh_total
+summ hh_size
+summ hh_composition
 
 * BMI
 bysort bmicat: summ bmi
@@ -214,18 +194,18 @@ safetab bmicat obese4cat, m
 safetab bmicat_sa obese4cat_sa, m
 
 * Age
-bysort agegroup: summ age
+bysort ageCat: summ age
 
 * Smoking
 safetab smoke smoke_nomiss, m
 
 * Diabetes
-safetab dm_type
-safetab dm_type_exeter_os
-tab dm_type dm_type_exeter_os, row col
+*safetab dm_type
+*safetab dm_type_exeter_os
+*tab dm_type dm_type_exeter_os, row col
 
 * CKD
-safetab egfr60, m
+*safetab egfr60, m
 
 /* EXPECTED RELATIONSHIPS WITH ETHNICITY =======================================*/ 
 
@@ -236,7 +216,7 @@ foreach var in $varlist {
 }
 
 /* AGE DISTRUBUTION OF HOUSEHOLDS=======================================================*/
-bysort eth5: tab agegroup hh_total_cat, col
+bysort eth5: tab ageCat hh_size, col
 
 /* SENSE CHECK OUTCOMES=======================================================*/
 foreach i of global outcomes {

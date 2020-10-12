@@ -1,6 +1,6 @@
 /*==============================================================================
 DO FILE NAME:			03a_outcomes_checks_eth16
-PROJECT:				Ethnicity and COVID-19 
+PROJECT:				Households and COVID-19 
 DATE: 					25 August 2020 
 AUTHOR:					K Wing
 						adapted from R Mathur	
@@ -30,9 +30,15 @@ use hh_analysis_dataset_DRAFT.dta, clear
 
  ==============================================================================*/
 
+cd ${outputData}
+clear all
+use hh_analysis_dataset.dta, clear
+
+ 
+ 
 * Open a log file
 capture log close
-log using "03a_hh_outcomes_checks", replace t
+log using "03_hh_outcomes_checks", replace t
 
 
  /* PROGRAMS TO AUTOMATE TABULATIONS===========================================*/ 

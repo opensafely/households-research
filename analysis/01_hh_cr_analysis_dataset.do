@@ -25,11 +25,17 @@ use inputWithHHDependencies.dta, clear
 */
 
 cd ${outputData}
+
 clear all
+
 /*
 import delimited "E:\cohorts\households-research\output\input.csv", encoding(ISO-8859-2)
 save input.dta, replace
 */
+import delimited "E:\cohorts\households-research\output\input.csv", clear
+
+hist age
+
 use input.dta, clear
 
 
@@ -268,6 +274,10 @@ preserve
     list
     export excel using hhCompositionKey.xlsx, replace first(var)
 restore
+
+*also create a total number of cases in the household variable
+bysort hh_id:egen totCasesInHH=total(case)
+la var totCasesInHH "Total number of cases in a specific household"
 
 
 *rename case date
@@ -1060,19 +1070,25 @@ save hh_analysis_datasetALLVARS.dta, replace
 
 
 *keep the variables I need from the hh analysis
-keep patient_id age hh_id hh_size hh_composition case_date case eth5 eth16 indexdate sex bmicat smoke imd region comorb_Neuro comorb_Immunosuppression shielding chronic_respiratory_disease chronic_cardiac_disease diabetes chronic_liver_disease cancer egfr_cat hypertension
-*save file
+keep patient_id age ageCat hh_id hh_size hh_composition case_date case eth5 eth16 ethnicity_16 indexdate sex bmicat smoke imd region comorb_Neuro comorb_Immunosuppression shielding chronic_respiratory_disease chronic_cardiac_disease diabetes chronic_liver_disease cancer egfr_cat hypertension smoke_nomiss rural_urban
 
+*create a diabetes binary variable
+generate diabetes=0
+replace diabetes=1 if diabetes_date==.
+la var diabetes "Diabetes"
 
 *some other tweaks to vars (may be handled later but did not want to get rid of this code yet)
 *sort out sex and region etc
 tab sex
 generate sex2=.
-replace sex2=0 if sex=="F"
-replace sex2=1 if sex=="M"
-tab sex2
-label define sex2Label 0 "F" 1 "M"
-label values sex2 sex2Label
+replace sex2=1 if sex=="F"
+replace sex2=2 if sex=="M"
+drop sex
+rename sex2 sex
+tab sex
+label define sexLabel 1 "F" 2 "M"
+label values sex sexLabel
+label var sex "Sex"
 
 *sort out region
 generate region2=.
@@ -1085,15 +1101,94 @@ replace region2=5 if region=="South East"
 replace region2=6 if region=="South West"
 replace region2=7 if region=="West Midlands"
 replace region2=8 if region=="Yorkshire and The Humber"
-label define region2Label 0 "East" 1 "East Midlands"  2 "London" 3 "North East" 4 "North West" 5 "South East" 6 "South West" 7 "West Midlands" 8 "Yorkshire and The Humber"
-label values region2 region2Label
 
-drop sex
-rename sex2 sex
 drop region
 rename region2 region
 label var case_date "date of case"
 label var region "region of England"
+
+label define regionLabel 0 "East" 1 "East Midlands"  2 "London" 3 "North East" 4 "North West" 5 "South East" 6 "South West" 7 "West Midlands" 8 "Yorkshire and The Humber"
+label values region regionLabel
+
+
+*create an IMD variable with two categories
+tab imd
+generate imdBroad=.
+replace imdBroad=1 if imd==1|imd==2|imd==3
+replace imdBroad=2 if imd==4|imd==5
+label define imdBroadLabel 1 "Less deprived" 2 "More deprived"
+label values imdBroad imdBroadLabel
+la var imdBroad "IMD in two categories (1=1-3, 2=4-5)"
+
+*label the urban rural categories
+replace rural_urban=. if rural_urban<1|rural_urban>8
+label define rural_urbanLabel 1 "urban major conurbation" ///
+							  2 "urban minor conurbation" ///
+							  3 "urban city and town" ///
+							  4 "urban city and town in a sparse setting" ///
+							  5 "rural town and fringe" ///
+							  6 "rural town and fringe in a sparse setting" ///
+							  7 "rural village and dispersed" ///
+							  8 "rural village and dispersed in a sparse setting" ///
+							  
+label values rural_urban rural_urbanLabel
+tab rural_urban, miss
+
+*generate a binary rural urban (with missing assigned to urban)
+generate rural_urbanBroad=.
+replace rural_urbanBroad=1 if rural_urban<=4|rural_urban==.
+replace rural_urbanBroad=0 if rural_urban>4 & rural_urban!=.
+label define rural_urbanBroadLabel 0 "Rural" 1 "Urban"
+label values rural_urbanBroad rural_urbanBroadLabel
+tab rural_urbanBroad rural_urban, miss
+label var rural_urbanBroad "Rural-Urban"
+
+*create a hh_size variable with 5 groups
+generate hh_size5cat=.
+replace hh_size5cat=1 if hh_size==2|hh_size==3
+replace hh_size5cat=2 if hh_size==4|hh_size==5
+replace hh_size5cat=3 if hh_size==6|hh_size==7
+replace hh_size5cat=4 if hh_size==8|hh_size==9|hh_size==10
+
+label define hh_size5catLabel 1 "2-3" 2 "4-5" 3 "6-7" 4 "8-10"
+label values hh_size5cat hh_size5catLabel
+tab hh_size5cat hh_size, miss
+
+
+*create smoking variable with an unknwon category
+tab smoke, miss
+replace smoke=4 if smoke==.u
+label define smokeLabel 1 "Never" 2 "Former" 3 "Current" 4 "Unknown"
+label values smoke smokeLabel
+tab smoke
+
+*tying up labelling
+label variable ageCat "Categorised age (years)"
+label define eth5Label 1 "White" 2 "South Asian" 3 "Black" 4 "Mixed" 5 "Other"
+label values eth5 eth5Label
+label define chronic_respiratory_diseaseLabel 0 "No" 1 "Yes"
+label values chronic_respiratory_disease chronic_respiratory_diseaseLabel
+label define chronic_cardiac_diseaseLabel 0 "No" 1 "Yes"
+label values chronic_cardiac_disease chronic_cardiac_diseaseLabel
+label define cancerLabel 0 "No" 1 "Yes"
+label values cancer cancerLabel
+label define chronic_liver_diseaseLabel 0 "No" 1 "Yes"
+label values chronic_liver_disease chronic_liver_diseaseLabel
+label define hypertensionLabel 0 "No" 1 "Yes"
+label values hypertension hypertensionLabel
+label define comorb_NeuroLabel 0 "No" 1 "Yes"
+label values comorb_Neuro comorb_NeuroLabel
+label define comorb_ImmunosuppressionLabel 0 "No" 1 "Yes"
+label values comorb_Immunosuppression comorb_ImmunosuppressionLabel
+label define diabetesLabel 0 "No" 1 "Yes"
+label values diabetes diabetesLabel
+label define imdLabel 1 "1 - least deprived" 2 "2" 3 "3" 4 "4" 5 "5 - most deprived", replace
+label values imd imdLabel
+label define bmicatLabel 1 "Underweight" 2 "Normal" 3 "Overweight" 4 "Obese I" 5 "Obese II" 6 "Obese III"
+label values bmicat bmicatLabel
+
+
+
 
 save hh_analysis_dataset.dta, replace
 
