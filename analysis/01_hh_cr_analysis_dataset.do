@@ -957,7 +957,6 @@ foreach i of global outcomes {
 	lab var `i' 					"outcome `i'"
 	safetab `i'
 }
-label var was_ventilated_flag		"outcome: ICU Ventilation"
 
 la var case "Probable case"
 la var case_date "Probable case_date"
