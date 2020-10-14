@@ -31,4 +31,4 @@ actions:
     outputs:
       moderately_sensitive:
         notebook: opensafely_age_hh.html
-        log: analysis/opensafely_age_hh.log
+        notebook_log: analysis/opensafely_age_hh.log
