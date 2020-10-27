@@ -76,7 +76,8 @@ syntax, variable(varname) condition(string)
 	cou if `variable' `condition'
 	local rowdenom = r(N)
 	local colpct = 100*(r(N)/`overalldenom')
-	file write tablecontent %9.0gc (`rowdenom')  (" (") %3.1f (`colpct') (")") _tab
+	*file write tablecontent %9.0gc (`rowdenom')  (" (") %3.1f (`colpct') (")") _tab
+	file write tablecontent %9.0f (`rowdenom')  (" (") %3.1f (`colpct') (")") _tab
 
 	/*this loops through groups*/
 	forvalues i=1/4{
@@ -84,7 +85,8 @@ syntax, variable(varname) condition(string)
 	local rowdenom = r(N)
 	cou if hh_size5cat == `i' & `variable' `condition'
 	local pct = 100*(r(N)/`rowdenom') 
-	file write tablecontent %9.0gc (r(N)) (" (") %3.1f (`pct') (")") _tab
+	*file write tablecontent %9.0gc (r(N)) (" (") %3.1f (`pct') (")") _tab
+	file write tablecontent %9.0f (r(N)) (" (") %3.1f (`pct') (")") _tab
 	}
 	
 	file write tablecontent _n
@@ -292,11 +294,11 @@ tabulatevariable, variable(imd) min(1) max(5)
 file write tablecontent _n 
 
 *REGION
-tabulatevariable, variable(region) min(1) max(5) 
+tabulatevariable, variable(region) min(0) max(8) 
 file write tablecontent _n 
 
-*RURAL URBAN
-tabulatevariable, variable(rural_urbanBroad) min(1) max(8) 
+*RURAL URBAN (five categories)
+tabulatevariable, variable(rural_urbanFive) min(1) max(5) 
 file write tablecontent _n 
 
 *EGFR_CAT - come back to this one
@@ -357,7 +359,7 @@ clear
 insheet using "table1_hhsize5cat.txt", clear
 
 
-
+export excel using "E:\cohorts\households-research\output\redacted_output\hh_size_T1.xlsx", replace
 
 
 

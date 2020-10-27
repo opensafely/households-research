@@ -275,15 +275,6 @@ preserve
     export excel using hhCompositionKey.xlsx, replace first(var)
 restore
 
-*also create a total number of cases in the household variable
-bysort hh_id:egen totCasesInHH=total(case)
-la var totCasesInHH "Total number of cases in a specific household"
-
-
-*rename case date
-rename primary_care_case caseDate
-generate case=0
-replace case=1 if caseDate!=""
 
 ****************************
 *  Create required cohort  *
@@ -735,6 +726,17 @@ covid_primary_care_sequalae
 */
 
 *Think we only need the outcome that is the 3 primary types of probable primary care codes
+
+*rename case date
+rename primary_care_case caseDate
+generate case=0
+replace case=1 if caseDate!=""
+*add people who had confirmed covid death as cases
+
+
+*create a total number of cases in the household variable
+bysort hh_id:egen totCasesInHH=total(case)
+la var totCasesInHH "Total number of cases in a specific household"
 	
 *drop households with one person or more than 9, order and rename variables
 tab hh_size
@@ -759,7 +761,6 @@ gen onssuspecteddeath_date = onsdeath_date if died_ons_suspectedcovid_flag_any =
 * Date of non-COVID death in ONS 
 * If missing date of death resulting died_date will also be missing
 gen ons_noncoviddeath_date = onsdeath_date if died_ons_covid_flag_any != 1
-
 
 
 /* CONVERT STRINGS TO DATE FOR OUTCOME VARIABLES =============================*/
@@ -799,6 +800,9 @@ foreach i of global outcomes {
 }
 
 order patient_id age hh_id hh_size case case_date ethnicity
+
+*update case variable so that those wwho died of confirmed covid are also considered cases
+
 
 /*
 drop severe
@@ -1070,12 +1074,13 @@ save hh_analysis_datasetALLVARS.dta, replace
 
 
 *keep the variables I need from the hh analysis
-keep patient_id age ageCat hh_id hh_size hh_composition case_date case eth5 eth16 ethnicity_16 indexdate sex bmicat smoke imd region comorb_Neuro comorb_Immunosuppression shielding chronic_respiratory_disease chronic_cardiac_disease diabetes chronic_liver_disease cancer egfr_cat hypertension smoke_nomiss rural_urban
+keep patient_id age ageCat hh_id hh_size hh_composition case_date case eth5 eth16 ethnicity_16 indexdate sex bmicat smoke imd region comorb_Neuro comorb_Immunosuppression shielding chronic_respiratory_disease chronic_cardiac_disease diabetes_date chronic_liver_disease cancer egfr_cat hypertension smoke_nomiss rural_urban
 
 *create a diabetes binary variable
 generate diabetes=0
-replace diabetes=1 if diabetes_date==.
+replace diabetes=1 if diabetes_date!=.
 la var diabetes "Diabetes"
+tab diabetes
 
 *some other tweaks to vars (may be handled later but did not want to get rid of this code yet)
 *sort out sex and region etc
@@ -1133,6 +1138,18 @@ label define rural_urbanLabel 1 "urban major conurbation" ///
 							  
 label values rural_urban rural_urbanLabel
 tab rural_urban, miss
+
+*create a 4 category rural urban variable based upon meeting with Roz 21st October
+generate rural_urbanFive=.
+la var rural_urbanFive "Rural Urban in five categories"
+replace rural_urbanFive=1 if rural_urban==1
+replace rural_urbanFive=2 if rural_urban==2
+replace rural_urbanFive=3 if rural_urban==3|rural_urban==4
+replace rural_urbanFive=4 if rural_urban==5|rural_urban==6
+replace rural_urbanFive=5 if rural_urban==7|rural_urban==8
+label define rural_urbanFiveLabel 1 "Urban major conurbation" 2 "Urban minor conurbation" 3 "Urban city and town" 4 "Rural town and fringe" 5 "Rural village and dispersed"
+label values rural_urbanFive rural_urbanFiveLabel
+tab rural_urbanFive, miss
 
 *generate a binary rural urban (with missing assigned to urban)
 generate rural_urbanBroad=.
