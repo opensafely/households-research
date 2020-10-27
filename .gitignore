@@ -2,7 +2,6 @@
 model.log
 */input.csv
 */input.dta
-output/
 __pycache__
 .python-version
 .idea/
