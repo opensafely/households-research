@@ -154,17 +154,7 @@ def decimal_to_bit_array(d, n_digits):
 # In[15]:
 
 
-x = np.array(
-    [
-        -3.0,
-        -2.0,
-        0.1,
-        0.2,
-        0.3,
-        0.4,
-        0.5,
-    ]
-)
+x = np.array([-3.0, -2.0, 0.1, 0.2, 0.3, 0.4, 0.5,])
 
 
 # In[16]:
@@ -239,7 +229,7 @@ om >= j
 # In[19]:
 
 
-def mynll(x):
+def mynll(x, Y, XX):
     try:  # Ideally catch the linear algebra fail directly
         llaL = x[0]
         llaG = x[1]
@@ -294,18 +284,8 @@ def mynll(x):
 
 
 # Indicative parameters - to do, add bounds and mulitple restarts
-x0 = np.array(
-    [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-    ]
-)
-mynll(x0)
+x0 = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,])
+mynll(x0, Y, XX)
 
 
 # In[21]:
@@ -341,7 +321,13 @@ def callbackF(x, x2=0.0, x3=0.0):
 # First try from (essentially) the origin
 foutstore = []
 fout = op.minimize(
-    mynll, x0, method="TNC", callback=callbackF, bounds=bb, options={"maxiter": 10000}
+    mynll,
+    x0,
+    (Y, XX),
+    method="TNC",
+    callback=callbackF,
+    bounds=bb,
+    options={"maxiter": 10000},
 )
 # xhat = fout.x
 foutstore.append(fout)
@@ -357,7 +343,7 @@ for k in range(0, nrestarts):
     nll0 = np.nan
     while (np.isnan(nll0)) or (np.isinf(nll0)):
         xx0 = np.random.uniform(bb[:, 0], bb[:, 1])
-        nll0 = mynll(xx0)
+        nll0 = mynll(xx0, Y, XX)
     try:
         print("Starting at:")
         print(xx0)
@@ -365,6 +351,7 @@ for k in range(0, nrestarts):
         fout = op.minimize(
             mynll,
             xx0,
+            (Y, XX),
             bounds=bb,
             method="TNC",
             callback=callbackF,
@@ -416,18 +403,18 @@ for j in tqdm(range(0, pn)):
     for k in range(0, j):
         ek[k] = dx[k]
         Hinv[j, k] = (
-            mynll(xhat + ej + ek)
-            - mynll(xhat + ej - ek)
-            - mynll(xhat - ej + ek)
-            + mynll(xhat - ej - ek)
+            mynll(xhat + ej + ek, Y, XX)
+            - mynll(xhat + ej - ek, Y, XX)
+            - mynll(xhat - ej + ek, Y, XX)
+            + mynll(xhat - ej - ek, Y, XX)
         )
         ek[k] = 0.0
     Hinv[j, j] = (
-        -mynll(xhat + 2 * ej)
-        + 16 * mynll(xhat + ej)
-        - 30 * mynll(xhat)
-        + 16 * mynll(xhat - ej)
-        - mynll(xhat - 2 * ej)
+        -mynll(xhat + 2 * ej, Y, XX)
+        + 16 * mynll(xhat + ej, Y, XX)
+        - 30 * mynll(xhat, Y, XX)
+        + 16 * mynll(xhat - ej, Y, XX)
+        - mynll(xhat - 2 * ej, Y, XX)
     )
     ej[j] = 0.0
 Hinv += np.triu(Hinv.T, 1)
