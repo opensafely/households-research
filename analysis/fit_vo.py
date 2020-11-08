@@ -142,13 +142,13 @@ for i in range(0, num_households):
 # In[14]:
 
 
-@numba.jit
+@numba.jit(nopython=True, cache=True)
 def phi(s, logtheta=0.0):
     theta = np.exp(logtheta)
     return (1.0 + theta * s) ** (-1.0 / theta)
 
 
-@numba.jit(nopython=True)
+@numba.jit(nopython=True, cache=True)
 def decimal_to_bit_array(d, n_digits):
     powers_of_two = 2 ** np.arange(32)[::-1]
     return ((d & powers_of_two) / powers_of_two)[-n_digits:]
@@ -232,7 +232,7 @@ om >= j
 # In[19]:
 
 
-@numba.jit(nopython=True, parallel=True)
+@numba.jit(nopython=True, parallel=False, fastmath=False, cache=True)
 def mynll(x, Y, XX):
     if True:  # Ideally catch the linear algebra fail directly
         llaL = x[0]
