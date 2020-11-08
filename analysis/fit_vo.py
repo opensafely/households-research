@@ -189,7 +189,7 @@ for i in range(0, num_households):
         ii = np.argsort(y)
         y = y[ii]
         X = X[ii, :]
-        q = sum(y > 0)
+        q = np.sum(y > 0)
         r = 2 ** q
         m = len(y)
 
@@ -260,7 +260,7 @@ def mynll(x):
                 ii = np.argsort(y)
                 y = y[ii]
                 X = X[ii, :]
-                q = sum(y > 0)
+                q = np.sum(y > 0)
                 r = 2 ** q
                 m = len(y)
 
