@@ -146,6 +146,11 @@ def phi(s, logtheta=0.0):
     return (1.0 + theta * s) ** (-1.0 / theta)
 
 
+def decimal_to_bit_array(d, n_digits):
+    powers_of_two = 2 ** np.arange(32)[::-1]
+    return ((d & powers_of_two) / powers_of_two)[-n_digits:]
+
+
 # In[15]:
 
 
@@ -195,11 +200,9 @@ for i in range(0, len(hhids)):
 
         BB = np.zeros((r, r))  # To be the Ball matrix
         for jd in range(0, r):
+            j = decimal_to_bit_array(jd, m)
             for omd in range(0, jd + 1):
-                jstr = format(jd, "0" + str(m) + "b")
-                omstr = format(omd, "0" + str(m) + "b")
-                j = np.array([int(jstr[x]) for x in range(0, len(jstr))])
-                om = np.array([int(omstr[x]) for x in range(0, len(omstr))])
+                om = decimal_to_bit_array(omd, m)
                 BB[jd, omd] = 1.0 / np.prod(
                     (phi((1 - j) @ laM, logtheta) ** om) * (Bk ** (1 - j))
                 )
@@ -219,8 +222,7 @@ for jd in range(0, r):
     jstr = format(jd, "0" + str(m) + "b")
     j = np.array([int(jstr[x]) for x in range(0, len(jstr))])
     for omd in range(0, jd + 1):
-        omstr = format(omd, "0" + str(m) + "b")
-        om = np.array([int(omstr[x]) for x in range(0, len(omstr))])
+        om = decimal_to_bit_array(omd, m)
         if np.all(om <= j):
             print("({:d},{:d}) j: {}; omega: {}.".format(jd, omd, jstr, omstr))
 
@@ -238,7 +240,6 @@ om >= j
 
 
 def mynll(x):
-
     try:  # Ideally catch the linear algebra fail directly
         llaL = x[0]
         llaG = x[1]
@@ -272,11 +273,9 @@ def mynll(x):
 
                 BB = np.zeros((r, r))  # To be the Ball matrix
                 for jd in range(0, r):
-                    jstr = format(jd, "0" + str(m) + "b")
-                    j = np.array([int(jstr[x]) for x in range(0, len(jstr))])
+                    j = decimal_to_bit_array(jd, m)
                     for omd in range(0, jd + 1):
-                        omstr = format(omd, "0" + str(m) + "b")
-                        om = np.array([int(omstr[x]) for x in range(0, len(omstr))])
+                        om = decimal_to_bit_array(omd, m)
                         if np.all(om <= j):
                             BB[jd, omd] = 1.0 / np.prod(
                                 (phi((1 - j) @ laM, logtheta) ** om) * (Bk ** (1 - j))
@@ -500,3 +499,4 @@ print(
 
 
 # In[ ]:
+
