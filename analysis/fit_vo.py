@@ -117,8 +117,8 @@ na = max(as2rg.values())
 # In[12]:
 
 
-Y = []  # To store outcomes
-XX = []  # To store design matrices
+Y = numba.typed.List()  # To store outcomes
+XX = numba.typed.List()  # To store design matrices
 for i in range(0, num_households):
     mya = [as2rg[a] for a in ages[i]]
     m = len(mya)
