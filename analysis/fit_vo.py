@@ -15,6 +15,7 @@
 
 
 # get_ipython().run_line_magic('matplotlib', 'inline')
+import numba
 import numpy as np
 import scipy.stats as st
 import scipy.optimize as op
@@ -141,11 +142,13 @@ for i in range(0, num_households):
 # In[14]:
 
 
+@numba.jit
 def phi(s, logtheta=0.0):
     theta = np.exp(logtheta)
     return (1.0 + theta * s) ** (-1.0 / theta)
 
 
+@numba.jit(nopython=True)
 def decimal_to_bit_array(d, n_digits):
     powers_of_two = 2 ** np.arange(32)[::-1]
     return ((d & powers_of_two) / powers_of_two)[-n_digits:]
@@ -214,7 +217,7 @@ for jd in range(0, r):
     for omd in range(0, jd + 1):
         om = decimal_to_bit_array(omd, m)
         if np.all(om <= j):
-            print("({:d},{:d}) j: {}; omega: {}.".format(jd, omd, jstr, omstr))
+            print("({:d},{:d}) j: {}; omega: {}.".format(jd, omd, j, om))
 
 
 # In[18]:
@@ -229,8 +232,9 @@ om >= j
 # In[19]:
 
 
+@numba.jit(nopython=True, parallel=True)
 def mynll(x, Y, XX):
-    try:  # Ideally catch the linear algebra fail directly
+    if True:  # Ideally catch the linear algebra fail directly
         llaL = x[0]
         llaG = x[1]
         logtheta = x[2]
@@ -275,7 +279,8 @@ def mynll(x, Y, XX):
         # nll += 7.4*np.sum(x**2) # Add a Ridge if needed
         nll += np.sum(x ** 2)  # Add a Ridge if needed
         return nll
-    except:
+    else:
+        # This was a try/except block but these are not supported by numba. TODO: work out and implement correct branching logic
         nll = np.inf
         return nll
 
@@ -310,7 +315,7 @@ bb = np.array(
 def callbackF(x, x2=0.0, x3=0.0):
     print(
         "Evaluated at [{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}]: {:.8f}".format(
-            x[0], x[1], x[2], x[3], x[4], x[5], x[6], mynll(x)
+            x[0], x[1], x[2], x[3], x[4], x[5], x[6], mynll(x, Y, XX)
         )
     )
 
