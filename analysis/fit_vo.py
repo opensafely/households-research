@@ -44,7 +44,7 @@ posi = (df["first_sampling"].values == "Positive") | (
 
 hcol = df.household_id.values
 hhids = pd.unique(df.household_id)
-len(hhids)
+num_households = len(hhids)
 
 
 # In[6]:
@@ -118,7 +118,7 @@ na = max(as2rg.values())
 
 Y = []  # To store outcomes
 XX = []  # To store design matrices
-for i in range(0, len(hhids)):
+for i in range(0, num_households):
     mya = [as2rg[a] for a in ages[i]]
     m = len(mya)
     myx = np.zeros((m, na))
@@ -178,8 +178,8 @@ alpha = x[4 : (4 + na)]
 beta = x[(4 + na) : (4 + 2 * na)]
 gamma = x[(4 + 2 * na) :]
 
-nlv = np.zeros(len(hhids))  # Vector of negative log likelihoods
-for i in range(0, len(hhids)):
+nlv = np.zeros(num_households)  # Vector of negative log likelihoods
+for i in range(0, num_households):
     y = Y[i]
     X = XX[i]
     if np.all(y == 0.0):
@@ -249,8 +249,8 @@ def mynll(x):
         beta = x[(4 + na) : (4 + 2 * na)]
         gamma = x[(4 + 2 * na) :]
 
-        nlv = np.zeros(len(hhids))  # Vector of negative log likelihoods
-        for i in range(0, len(hhids)):
+        nlv = np.zeros(num_households)  # Vector of negative log likelihoods
+        for i in range(0, num_households):
             y = Y[i]
             X = XX[i]
             if np.all(y == 0.0):
