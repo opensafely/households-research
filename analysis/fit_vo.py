@@ -23,11 +23,9 @@ import pandas as pd
 from numpy import linalg as LA
 import matplotlib.pyplot as plt
 from tqdm.notebook import tqdm
-
+from collections import namedtuple
 
 # In[3]:
-
-
 df = pd.read_csv(
     "./vo_data.csv",
     usecols=["household_id", "first_sampling", "second_sampling", "age_group"],
@@ -59,22 +57,22 @@ num_households = len(hhids)
 # In[6]:
 
 
-hh_tests = []
-ages = []
+household_tests = numba.typed.List()
+household_ages = numba.typed.List()
 for hid in hhids:
     dfh = df[df.household_id == hid]
     tests = (dfh["first_sampling"].values == "Positive") | (
         dfh["second_sampling"].values == "Positive"
     )
-    aa = dfh.iloc[:, 2].values
-    hh_tests.append(tests)
-    ages.append(aa)
+    aa = dfh["age_group"].values
+    household_tests.append(tests)
+    household_ages.append(numba.typed.List(aa.to_list()))
 
 
 # In[7]:
 
 
-age_gs = pd.unique(df.age_group)
+age_gs = pd.unique(df.age_group).to_list()
 age_gs.sort()
 age_gs
 
@@ -82,8 +80,8 @@ age_gs
 # In[8]:
 
 
-nsamp = np.zeros(len(age_gs))
-npos = np.zeros(len(age_gs))
+counts_by_agegroup = np.zeros(len(age_gs))
+positives_by_agegroup = np.zeros(len(age_gs))
 
 
 # In[9]:
@@ -91,10 +89,10 @@ npos = np.zeros(len(age_gs))
 
 for i, ag in enumerate(age_gs):
     dfa = df[df.age_group == ag]
-    nsamp[i] = len(dfa)
+    counts_by_agegroup[i] = len(dfa)
     dfp = df[posi]
     dfa = dfp[dfp.age_group == ag]
-    npos[i] = len(dfa)
+    positives_by_agegroup[i] = len(dfa)
 
 
 # In[10]:
@@ -102,20 +100,23 @@ for i, ag in enumerate(age_gs):
 
 # Dictionary that puts ages in categories
 # 0 is reference class
-as2rg = {
-    "00-10": 1,
-    "11-20": 1,
-    "21-30": 0,
-    "31-40": 0,
-    "41-50": 0,
-    "51-60": 0,
-    "61-70": 0,
-    "71-80": 0,
-    "81-90": 0,
-    "91+": 0,
-}
-
-
+as2rg = numba.typed.Dict.empty(
+    key_type=numba.core.types.unicode_type, value_type=numba.core.types.int8
+)
+as2rg.update(
+    {
+        "00-10": 1,
+        "11-20": 1,
+        "21-30": 0,
+        "31-40": 0,
+        "41-50": 0,
+        "51-60": 0,
+        "61-70": 0,
+        "71-80": 0,
+        "81-90": 0,
+        "91+": 0,
+    }
+)
 # In[11]:
 
 
@@ -124,22 +125,29 @@ na = max(as2rg.values())
 
 # In[12]:
 
+# XXX I would separate out the data preparation into a separate action so we can re-run the model without recompiling the intermediate datasets
 
-Y = numba.typed.List()  # To store outcomes
-XX = numba.typed.List()  # To store design matrices
-for i in range(0, num_households):
-    mya = [as2rg[a] for a in ages[i]]
-    m = len(mya)
-    myx = np.zeros((m, na))
-    myy = np.zeros(m)
-    for j, a in enumerate(mya):
-        if a > 0:
-            myx[j, a - 1] = 1
-        if hh_tests[i][j]:
-            myy[j] = 1
-    Y.append(myy)
-    XX.append(np.atleast_2d(myx))
+# XXX this might benefit from parallel=True when using larger datasets
+@numba.jit(nopython=True, cache=True, parallel=False)
+def get_storage_lists(as2rg, household_tests, household_ages):
+    Y = numba.typed.List()  # To store outcomes
+    XX = numba.typed.List()  # To store design matrices
+    for i in range(0, num_households):
+        mya = [as2rg[a] for a in household_ages[i]]
+        m = len(mya)
+        myx = np.zeros((m, na))
+        myy = np.zeros(m)
+        for j, a in enumerate(mya):
+            if a > 0:
+                myx[j, a - 1] = 1
+            if household_tests[i][j]:
+                myy[j] = 1
+        Y.append(myy)
+        XX.append(np.atleast_2d(myx))
+    return Y, XX
 
+
+Y, XX = get_storage_lists(as2rg, household_tests, household_ages)
 
 # In[13]:
 
@@ -171,57 +179,60 @@ x = np.array([-3.0, -2.0, 0.1, 0.2, 0.3, 0.4, 0.5,])
 # In[16]:
 
 
-llaL = x[0]
-llaG = x[1]
-logtheta = x[2]
-eta = (4.0 / np.pi) * np.arctan(x[3])
-alpha = x[4 : (4 + na)]
-beta = x[(4 + na) : (4 + 2 * na)]
-gamma = x[(4 + 2 * na) :]
+@numba.jit(nopython=True, cache=True)
+def firstnll(Y, XX):
+    llaL = x[0]
+    llaG = x[1]
+    logtheta = x[2]
+    eta = (4.0 / np.pi) * np.arctan(x[3])
+    alpha = x[4 : (4 + na)]
+    beta = x[(4 + na) : (4 + 2 * na)]
+    gamma = x[(4 + 2 * na) :]
 
-nlv = np.zeros(num_households)  # Vector of negative log likelihoods
-for i in range(0, num_households):
-    y = Y[i]
-    X = XX[i]
-    if np.all(y == 0.0):
-        nlv[i] = np.exp(llaG) * np.sum(np.exp(alpha @ (X.T)))
-    else:
-        # Sort to go zeros then ones WLOG (could do in pre-processing)
-        ii = np.argsort(y)
-        y = y[ii]
-        X = X[ii, :]
-        q = np.sum(y > 0)
-        r = 2 ** q
-        m = len(y)
+    nlv = np.zeros(num_households)  # Vector of negative log likelihoods
+    for i in range(0, num_households):
+        y = Y[i]
+        X = XX[i]
+        if np.all(y == 0.0):
+            nlv[i] = np.exp(llaG) * np.sum(np.exp(alpha @ (X.T)))
+        else:
+            # Sort to go zeros then ones WLOG (could do in pre-processing)
+            ii = np.argsort(y)
+            y = y[ii]
+            X = X[ii, :]
+            q = np.sum(y > 0)
+            r = 2 ** q
+            m = len(y)
 
-        # Quantities that don't vary through the sum
-        Bk = np.exp(-np.exp(llaG) * np.exp(alpha @ (X.T)))
-        laM = np.exp(llaL) * np.outer(np.exp(beta @ (X.T)), np.exp(gamma @ (X.T)))
-        laM *= m ** eta
+            # Quantities that don't vary through the sum
+            Bk = np.exp(-np.exp(llaG) * np.exp(alpha @ (X.T)))
+            laM = np.exp(llaL) * np.outer(np.exp(beta @ (X.T)), np.exp(gamma @ (X.T)))
+            laM *= m ** eta
 
-        BB = np.zeros((r, r))  # To be the Ball matrix
-        for jd in range(0, r):
-            j = decimal_to_bit_array(jd, m)
-            for omd in range(0, jd + 1):
-                om = decimal_to_bit_array(omd, m)
-                BB[jd, omd] = 1.0 / np.prod(
-                    (phi((1 - j) @ laM, logtheta) ** om) * (Bk ** (1 - j))
-                )
-        nlv[i] = -np.log(LA.solve(BB, np.ones(r))[-1])
-        if q > 2:
-            break
-nll = np.sum(nlv)
+            BB = np.zeros((r, r))  # To be the Ball matrix
+            for jd in range(0, r):
+                j = decimal_to_bit_array(jd, m)
+                for omd in range(0, jd + 1):
+                    om = decimal_to_bit_array(omd, m)
+                    BB[jd, omd] = 1.0 / np.prod(
+                        (phi((1 - j) @ laM, logtheta) ** om) * (Bk ** (1 - j))
+                    )
+            nlv[i] = -np.log(LA.solve(BB, np.ones(r))[-1])
+            if q > 2:
+                break
+    nll = np.sum(nlv)
+    return nll, r, m
 
 
+nll, r, m = firstnll(Y, XX)
 # In[ ]:
 
 
 # In[17]:
 
-
+# XXX is it deliberate that the value of `r` (and `m`) is the one set in the last loop of the main loop in `firstnll`?
 for jd in range(0, r):
-    jstr = format(jd, "0" + str(m) + "b")
-    j = np.array([int(jstr[x]) for x in range(0, len(jstr))])
+    j = decimal_to_bit_array(jd, m)
     for omd in range(0, jd + 1):
         om = decimal_to_bit_array(omd, m)
         if np.all(om <= j):
@@ -319,7 +330,7 @@ bb = np.array(
 
 # In[22]:
 
-
+# XXX this could be compiled
 def callbackF(x, x2=0.0, x3=0.0):
     print(
         "Evaluated at [{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}]: {:.8f}".format(
