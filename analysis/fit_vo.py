@@ -28,7 +28,15 @@ from tqdm.notebook import tqdm
 # In[3]:
 
 
-df = pd.read_csv("./vo_data.csv")
+df = pd.read_csv(
+    "./vo_data.csv",
+    usecols=["household_id", "first_sampling", "second_sampling", "age_group"],
+    dtype={
+        "first_sampling": "category",
+        "second_sampling": "category",
+        "age_group": "category",
+    },
+)
 
 
 # In[4]:
