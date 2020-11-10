@@ -25,7 +25,6 @@ actions:
         hhsize: analysis/hh_sizes.png
         cases: analysis/hh_cases_*.png
 
-  household_analysis:
     run: jupyter:latest jupyter nbconvert /workspace/analysis/opensafely_age_hh.ipynb --execute --to html --output-dir=/workspace --ExecutePreprocessor.timeout=86400
     needs: [prepare_data]
     outputs:
