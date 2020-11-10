@@ -24,10 +24,19 @@ from numpy import linalg as LA
 import matplotlib.pyplot as plt
 from tqdm.notebook import tqdm
 from collections import namedtuple
+import sys
+import pathlib
+
+has_arguments = len(sys.argv) > 1
+nrestarts = 1
+if has_arguments:
+    nrestarts = int(sys.argv[1])
+    sys.stdout = open("vo.txt", "w")
+
 
 # In[3]:
 df = pd.read_csv(
-    "./vo_data.csv",
+    pathlib.Path(__file__).resolve().parent / "vo_data.csv",
     usecols=["household_id", "first_sampling", "second_sampling", "age_group"],
     dtype={
         "first_sampling": "category",
@@ -362,7 +371,8 @@ foutstore.append(fout)
 
 # Because box bounded, try multiple restarts with stable algorithm
 np.random.seed(46)
-nrestarts = 20
+
+print(f"nrestarts: {nrestarts}")
 for k in range(0, nrestarts):
     nll0 = np.nan
     while (np.isnan(nll0)) or (np.isinf(nll0)):
