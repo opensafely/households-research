@@ -43,3 +43,10 @@ actions:
     outputs:
       moderately_sensitive:
         vo: vo.txt
+
+  os_test:
+    run: python:latest python analysis/fit_os.py 1
+    needs: [prepare_data]
+    outputs:
+      moderately_sensitive:
+        vo: os.txt
