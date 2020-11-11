@@ -45,8 +45,8 @@ posi = df[df["case"] == 1]
 # In[5]:
 
 
-hcol = df.household_id.values
-hhids = pd.unique(df.household_id)
+hcol = df.hh_id.values
+hhids = pd.unique(df.hh_id)
 num_households = len(hhids)
 
 # Dictionary that puts ages in categories
@@ -83,7 +83,7 @@ print("Building arrays")
 household_tests = numba.typed.List()
 household_ages = numba.typed.List()
 for hid in hhids:
-    dfh = df[df.household_id == hid]
+    dfh = df[df.hh_id == hid]
     tests = dfh[dfh["case"] == 1]
     household_tests.append(tests)
     household_ages.append(numba.typed.List(dfh["age_group"].to_list()))
