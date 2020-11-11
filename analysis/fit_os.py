@@ -34,9 +34,7 @@ if has_arguments:
     sys.stdout = open("os.txt", "w")
 
 print("Loading data")
-df = pd.read_stata(
-    "../hh_analysis_datasetALLVARS.dta", columns=["hh_id", "age", "case"]
-)
+df = pd.read_stata("hh_analysis_datasetALLVARS.dta", columns=["hh_id", "age", "case"])
 
 # In[4]:
 
