@@ -1,4 +1,4 @@
-version: '1.0'
+version: "1.0"
 actions:
   generate_cohort:
     run: cohortextractor:latest generate_cohort --output-dir=/workspace
@@ -25,10 +25,16 @@ actions:
         hhsize: analysis/hh_sizes.png
         cases: analysis/hh_cases_*.png
 
-  household_analysis:
     run: jupyter:latest jupyter nbconvert /workspace/analysis/opensafely_age_hh.ipynb --execute --to html --output-dir=/workspace --ExecutePreprocessor.timeout=86400
     needs: [prepare_data]
     outputs:
       moderately_sensitive:
         notebook: opensafely_age_hh.html
         notebook_log: analysis/opensafely_age_hh.log
+
+  vo_test:
+    run: python:latest python analysis/fit_vo.py 20
+    needs: []
+    outputs:
+      moderately_sensitive:
+        vo: vo.txt
