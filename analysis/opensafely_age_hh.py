@@ -59,8 +59,7 @@ logging.info("Data Read In")
 nages = 2
 hhnums = df.hh_id.unique()
 
-# Setting this to 1 as suggested by Roz so we can check how long it takes
-optimize_maxiter = 10  #  Previous value was 1000
+optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
 
 Y = numba.typed.List()  # To store outcomes
