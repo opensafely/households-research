@@ -12,7 +12,6 @@ actions:
     outputs:
       highly_sensitive:
         allvars: hh_analysis_datasetALLVARS.dta
-        allvars_csv: hh_analysis_datasetALLVARS.csv
         redvars: hh_analysis_datasetREDVARS.dta
 
   descriptive_notebook:
