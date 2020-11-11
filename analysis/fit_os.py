@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
 
 # Process Vo data for a final size analysis by age
 # Edit 17 Aug: just look at adults and children to
 # Edit 25 Aug: add Cauchemez model and other updates for ONS
 # Edit 7 Oct: Try to debug the sub-epidemics problem Lorenzo noticed
 # Remember to atleast_2d the design matrices!
-
-
-# In[2]:
 
 
 # get_ipython().run_line_magic('matplotlib', 'inline')
@@ -39,10 +34,7 @@ df = pd.read_stata("hh_analysis_datasetALLVARS.dta", columns=["hh_id", "age", "c
 # In[4]:
 
 
-# Indices of ever positive cases
 posi = df[df["case"] == 1]
-
-# In[5]:
 
 
 hcol = df.hh_id.values
@@ -77,26 +69,20 @@ age_gs = as2rg.keys()
 print("Binning ages")
 df["age_group"] = pd.cut(df["age"], bins=bins, labels=age_gs, right=True)
 
-# In[6]:
 
 print("Building arrays")
 household_tests = numba.typed.List()
 household_ages = numba.typed.List()
 for hid in hhids:
     dfh = df[df.hh_id == hid]
+    tests = numba.int8[:]
     tests = dfh[dfh["case"] == 1].values
     household_tests.append(tests)
     household_ages.append(numba.typed.List(dfh["age_group"].values))
 
 
-# In[8]:
-
-
 counts_by_agegroup = np.zeros(len(age_gs))
 positives_by_agegroup = np.zeros(len(age_gs))
-
-
-# In[9]:
 
 
 for i, ag in enumerate(age_gs):
@@ -107,16 +93,8 @@ for i, ag in enumerate(age_gs):
     positives_by_agegroup[i] = len(dfa)
 
 
-# In[10]:
-
-
-# In[11]:
-
-
 na = max(as2rg.values())
 
-
-# In[12]:
 
 # XXX I would separate out the data preparation into a separate action so we can re-run the model without recompiling the intermediate datasets
 
@@ -142,13 +120,8 @@ def get_storage_lists(as2rg, household_tests, household_ages):
 
 Y, XX = get_storage_lists(as2rg, household_tests, household_ages)
 
-# In[13]:
-
 
 # The above processes the data - now add final size analysis; first do a run through
-
-
-# In[14]:
 
 
 @numba.jit(nopython=True, cache=True)
@@ -163,13 +136,7 @@ def decimal_to_bit_array(d, n_digits):
     return ((d & powers_of_two) / powers_of_two)[-n_digits:]
 
 
-# In[15]:
-
-
 x = np.array([-3.0, -2.0, 0.1, 0.2, 0.3, 0.4, 0.5,])
-
-
-# In[16]:
 
 
 @numba.jit(nopython=True, cache=True)
@@ -218,10 +185,7 @@ def firstnll(Y, XX):
 
 
 nll, r, m = firstnll(Y, XX)
-# In[ ]:
 
-
-# In[17]:
 
 # XXX is it deliberate that the value of `r` (and `m`) is the one set in the last loop of the main loop in `firstnll`?
 for jd in range(0, r):
@@ -232,16 +196,7 @@ for jd in range(0, r):
             print("({:d},{:d}) j: {}; omega: {}.".format(jd, omd, j, om))
 
 
-# In[18]:
-
-
 om >= j
-
-
-# In[ ]:
-
-
-# In[19]:
 
 
 @numba.jit(nopython=True, parallel=False, fastmath=False, cache=True)
@@ -297,15 +252,8 @@ def mynll(x, Y, XX):
         return nll
 
 
-# In[20]:
-
-
-# Indicative parameters - to do, add bounds and mulitple restarts
 x0 = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,])
 mynll(x0, Y, XX)
-
-
-# In[21]:
 
 
 bb = np.array(
@@ -321,8 +269,6 @@ bb = np.array(
 )
 
 
-# In[22]:
-
 # XXX this could be compiled
 def callbackF(x, x2=0.0, x3=0.0):
     print(
@@ -330,9 +276,6 @@ def callbackF(x, x2=0.0, x3=0.0):
             x[0], x[1], x[2], x[3], x[4], x[5], x[6], mynll(x, Y, XX)
         )
     )
-
-
-# In[23]:
 
 
 # First try from (essentially) the origin
@@ -348,9 +291,6 @@ fout = op.minimize(
 )
 # xhat = fout.x
 foutstore.append(fout)
-
-
-# In[24]:
 
 
 # Because box bounded, try multiple restarts with stable algorithm
@@ -383,13 +323,7 @@ for k in range(0, nrestarts):
         k -= 1
 
 
-# In[25]:
-
-
 foutstore
-
-
-# In[26]:
 
 
 ff = np.inf * np.ones(len(foutstore))
@@ -398,14 +332,8 @@ for i in range(0, len(foutstore)):  # In case of crash
         ff[i] = foutstore[i].fun
 
 
-# In[27]:
-
-
 xhat = foutstore[ff.argmin()].x
 print(xhat)
-
-
-# In[28]:
 
 
 pn = len(x0)
@@ -442,9 +370,6 @@ Hinv /= 4.0 * np.outer(dx, dx) + np.diag(
 covmat = LA.inv(0.5 * (Hinv + Hinv.T))
 stds = np.sqrt(np.diag(covmat))
 stds
-
-
-# In[29]:
 
 
 print(
@@ -501,7 +426,4 @@ print(
         100.0 * np.exp(xhat[6] + 1.96 * stds[6]),
     )
 )
-
-
-# In[ ]:
 
