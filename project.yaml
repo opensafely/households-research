@@ -39,8 +39,8 @@ actions:
         vo: vo.txt
 
   os_test:
-    run: python:latest python analysis/fit_os.py 1
+    run: python:latest python analysis/opensafely_age_hh.py
     needs: [prepare_data]
     outputs:
       moderately_sensitive:
-        vo: os.txt
+        log: opensafely_age_hh.log
