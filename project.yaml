@@ -33,7 +33,7 @@ actions:
         notebook_log: analysis/opensafely_age_hh.log
 
   vo_test:
-    run: python:latest python analysis/fit_vo.py 1
+    run: python:latest python analysis/fit_vo.py 20
     needs: []
     outputs:
       moderately_sensitive:
