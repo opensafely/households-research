@@ -84,9 +84,9 @@ household_tests = numba.typed.List()
 household_ages = numba.typed.List()
 for hid in hhids:
     dfh = df[df.hh_id == hid]
-    tests = dfh[dfh["case"] == 1]
+    tests = dfh[dfh["case"] == 1].values
     household_tests.append(tests)
-    household_ages.append(numba.typed.List(dfh["age_group"].to_list()))
+    household_ages.append(numba.typed.List(dfh["age_group"].values))
 
 
 # In[8]:
