@@ -62,24 +62,35 @@ hhnums = df.hh_id.unique()
 optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
 
-Y = numba.typed.List()  # To store outcomes
-XX = numba.typed.List()  # To store design matrices
-for i, num in enumerate(hhnums):
-    dfh = df[df.hh_id == num]
-
-    mya = dfh.age.values
-    m = len(mya)
+@numba.jit(nopython=True, cache=True)
+def get_y_and_xx(hh_ages, hh_cases):
+    m = len(hh_ages)
     myx = np.zeros((m, nages))
     myy = np.zeros(m)
-    for j, a in enumerate(mya):
+    for j, a in enumerate(hh_ages):
         if a <= 9:
             myx[j, :] = np.array([1, 0])
         elif (a > 9) and (a <= 18):
             myx[j, :] = np.array([0, 1])
-        if dfh.case.values[j] == 1:
+        if hh_cases[j] == 1:
             myy[j] = 1
-    Y.append(myy)
-    XX.append(np.atleast_2d(myx))
+    return myy, np.atleast_2d(myx)
+
+
+def get_storage_lists():
+    Y = numba.typed.List()  # To store outcomes
+    XX = numba.typed.List()  # To store design matrices
+    for num in hhnums:
+        dfh = df[df.hh_id == num]
+        y, xx = get_y_and_xx(dfh.age.values, dfh.case.values)
+        Y.append(y)
+        XX.append(xx)
+    return Y, XX
+
+
+
+
+Y, XX = get_storage_lists()
 
 
 logging.info("Data pre-processing completed")
