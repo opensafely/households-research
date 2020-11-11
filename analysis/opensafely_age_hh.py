@@ -34,6 +34,8 @@ if os.path.exists("hh_analysis_datasetALLVARS.dta"):
     )
 else:
     # test data
+    np.random.seed(42)
+
     df = pd.DataFrame()
     age_list = range(0, 100)
     case_list = [0] * 100 + [1]
