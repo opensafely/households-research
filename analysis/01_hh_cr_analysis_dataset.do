@@ -1,22 +1,22 @@
 /*==============================================================================
 DO FILE NAME:			00_cr_analysis_dataset
 PROJECT:				Household and SARS-CoV-2 transmission
-DATE: 					12th August 2020 
-AUTHOR:					Kevin Wing adapted from R Mathur H Forbes, A Wong, A Schultze, C Rentsch,K Baskharan, E Williamson 										
-DESCRIPTION OF FILE:	program 00, data management for project  
-						reformat variables 
+DATE: 					12th August 2020
+AUTHOR:					Kevin Wing adapted from R Mathur H Forbes, A Wong, A Schultze, C Rentsch,K Baskharan, E Williamson
+DESCRIPTION OF FILE:	program 00, data management for project
+						reformat variables
 						categorise variables
-						label variables 
+						label variables
 						apply exclusion criteria
 DATASETS USED:			data in memory (from output/inputWithHHDependencies.csv)
 DATASETS CREATED: 		none
 OTHER OUTPUT: 			logfiles, printed to folder analysis/$logdir
 
 
-sysdir set PLUS "/Users/kw/Documents/GitHub/households-research/analysis/adofiles" 
-sysdir set PERSONAL "/Users/kw/Documents/GitHub/households-research/analysis/adofiles" 
+sysdir set PLUS "/Users/kw/Documents/GitHub/households-research/analysis/adofiles"
+sysdir set PERSONAL "/Users/kw/Documents/GitHub/households-research/analysis/adofiles"
 
-							
+
 ==============================================================================*/
 /*dummy data only
 cd ${outputData}
@@ -24,24 +24,17 @@ clear all
 use inputWithHHDependencies.dta, clear
 */
 
-cd ${outputData}
 
 clear all
 
-/*
-import delimited "E:\cohorts\households-research\output\input.csv", encoding(ISO-8859-2)
-save input.dta, replace
-*/
-import delimited "E:\cohorts\households-research\output\input.csv", clear
+
+import delimited "output/input.csv", clear
 
 hist age
 
-use input.dta, clear
-
-
 * Open a log file
 cap log close
-log using "01_hh_cr_create_analysis_dataset.log", replace t
+log using "logs/01_hh_cr_create_analysis_dataset.log", replace t
 
 
 di "STARTING safecount FROM IMPORT:"
@@ -61,7 +54,7 @@ format indexdate %d
 
 /* CREATE VARIABLES===========================================================*/
 
-/* DEMOGRAPHICS */ 
+/* DEMOGRAPHICS */
 
 * Ethnicity (5 category)
 replace ethnicity = . if ethnicity==.
@@ -69,8 +62,8 @@ label define ethnicity 	1 "White"  					///
 						2 "Mixed" 					///
 						3 "Asian or Asian British"	///
 						4 "Black"  					///
-						5 "Other"					
-						
+						5 "Other"
+
 label values ethnicity ethnicity
 safetab ethnicity
 
@@ -83,11 +76,11 @@ safetab ethnicity
  replace eth5=. if ethnicity==.
 
  label define eth5	 	1 "White"  					///
-						2 "South Asian"				///						
+						2 "South Asian"				///
 						3 "Black"  					///
 						4 "Mixed"					///
-						5 "Other"					
-					
+						5 "Other"
+
 
 label values eth5 eth5
 safetab eth5, m
@@ -112,8 +105,8 @@ label define ethnicity_16 									///
 						13 "African" 						///
 						14 "Other Black" 					///
 						15 "Chinese" 						///
-						16 "Other" 							
-						
+						16 "Other"
+
 label values ethnicity_16 ethnicity_16
 safetab ethnicity_16,m
 
@@ -143,17 +136,17 @@ label define eth16 	///
 						3 "Other White" ///
 						4 "Indian" ///
 						5 "Pakistani" ///
-						6 "Bangladeshi" ///					
+						6 "Bangladeshi" ///
 						7 "Caribbean" ///
 						8 "African" ///
 						9 "Chinese" ///
 						10 "All mixed" ///
-						11 "All Other" 
+						11 "All Other"
 label values eth16 eth16
 safetab eth16,m
 
 
-* STP 
+* STP
 rename stp stp_old
 bysort stp_old: gen stp = 1 if _n==1
 replace stp = sum(stp)
@@ -164,10 +157,10 @@ drop stp_old
 rename imd imd_o
 egen imd = cut(imd_o), group(5) icodes
 
-* add one to create groups 1 - 5 
+* add one to create groups 1 - 5
 replace imd = imd + 1
 
-* - 1 is missing, should be excluded from population 
+* - 1 is missing, should be excluded from population
 replace imd = .u if imd_o == -1
 drop imd_o
 
@@ -175,19 +168,19 @@ drop imd_o
 recode imd 5 = 1 4 = 2 3 = 3 2 = 4 1 = 5 .u = .u
 
 label define imd 1 "1 least deprived" 2 "2" 3 "3" 4 "4" 5 "5 most deprived" .u "Unknown"
-label values imd imd 
+label values imd imd
 
-/*  Age variables  */ 
+/*  Age variables  */
 
-* Create categorised age 
+* Create categorised age
 recode age 	0/17.9999=0 ///
-			18/29.9999 = 1 /// 
-		    30/39.9999 = 2 /// 
+			18/29.9999 = 1 ///
+		    30/39.9999 = 2 ///
 			40/49.9999 = 3 ///
 			50/59.9999 = 4 ///
 			60/69.9999 = 5 ///
 			70/79.9999 = 6 ///
-			80/max = 7, gen(agegroup) 
+			80/max = 7, gen(agegroup)
 
 label define agegroup 	0 "0-<18" ///
 						1 "18-<30" ///
@@ -197,7 +190,7 @@ label define agegroup 	0 "0-<18" ///
 						5 "60-<70" ///
 						6 "70-<80" ///
 						7 "80+"
-						
+
 label values agegroup agegroup
 
 
@@ -215,7 +208,7 @@ replace hh_total_cat=1 if hh_size >=1 & hh_size<=2
 replace hh_total_cat=2 if hh_size >=3 & hh_size<=5
 replace hh_total_cat=3 if hh_size >=6 & hh_size<=10
 replace hh_total_cat=4 if hh_size >=11
-		
+
 /* Rohini code - I think I want to drop them completely rather than just not include in a derived household variable
 Note that U=private home, PC=care home, PN=nursing home, PS=care or nursing home, ""=unknown
 *remove people from hh_cat if they live in a care home
@@ -223,12 +216,12 @@ replace hh_total_cat=. if care_home_type!="U"
 */
 *keep only private homes
 drop if care_home_type!="U"
-			
+
 label define hh_total_cat 1 "1-2" ///
 						2 "3-5" ///
 						3 "6-10" ///
 						4 "11+"
-											
+
 label values hh_total_cat hh_total_cat
 
 safetab hh_total_cat,m
@@ -246,7 +239,7 @@ tab hh_size
 *edited dataset that only contains variables that will be used in the regression analysis (and were for shared in dummydata with Thomas and Heather)
 *create the age variable that I want
 egen ageCat=cut(age), at (0, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 120)
-recode ageCat 0=1 5=2 10=3 15=4 20=5 30=6 40=7 50=8 60=9 70=10 80=11 90=12 
+recode ageCat 0=1 5=2 10=3 15=4 20=5 30=6 40=7 50=8 60=9 70=10 80=11 90=12
 label define ageCatLabel 1 "0-4" 2 "5-9" 3 "10-14" 4 "15-19" 5 "20-29" 6 "30-39" 7 "40-49" 8 "50-59" 9 "60-69" 10 "70-79" 11 "80-89" 12 "90+"
 label values ageCat ageCatLabel
 tab ageCat, miss
@@ -263,7 +256,7 @@ foreach l of local ageLevels {
 		local count=`count'+1
 		display `count'
 		replace hh_composition=`count' if ageCat==`l' & hh_size==`m'
-	}	
+	}
 }
 order age hh_size hh_composition
 tab hh_composition
@@ -282,12 +275,12 @@ restore
 
 * Age: Exclude those with implausible ages
 cap assert age<.
-noi di "DROPPING AGE<105:" 
+noi di "DROPPING AGE<105:"
 drop if age>105
 safecount
 * Sex: Exclude categories other than M and F
 cap assert inlist(sex, "M", "F", "I", "U")
-noi di "DROPPING GENDER NOT M/F:" 
+noi di "DROPPING GENDER NOT M/F:"
 drop if inlist(sex, "I", "U")
 safecount
 
@@ -312,7 +305,7 @@ mkspline age = age, cubic nknots(4)
 
 
 /* CONVERT STRINGS TO DATE====================================================*/
-/* Comorb dates dates are given with month only, so adding day 
+/* Comorb dates dates are given with month only, so adding day
 15 to enable  them to be processed as dates 			  */
 
 *cr date for diabetes based on adjudicated type
@@ -352,28 +345,28 @@ foreach var of varlist 	chronic_respiratory_disease ///
 						calcium_channel_blockers ///
 						combination_bp_meds ///
 						spironolactone  ///
-						thiazide_diuretics ///						
+						thiazide_diuretics ///
 						{
-							
+
 		capture confirm string variable `var'
 		if _rc!=0 {
 			cap assert `var'==.
 			rename `var' `var'_date
 		}
-	
+
 		else {
 				replace `var' = `var' + "-15"
 				rename `var' `var'_dstr
 				replace `var'_dstr = " " if `var'_dstr == "-15"
-				gen `var'_date = date(`var'_dstr, "YMD") 
+				gen `var'_date = date(`var'_dstr, "YMD")
 				order `var'_date, after(`var'_dstr)
 				drop `var'_dstr
 		}
-	
+
 	format `var'_date %td
 }
 
-* Note - outcome dates are handled separtely below 
+* Note - outcome dates are handled separtely below
 
 * Some names too long for loops below, shorten
 rename permanent_immunodeficiency_date 	perm_immunodef_date
@@ -381,7 +374,7 @@ rename temporary_immunodeficiency_date 	temp_immunodef_date
 rename bmi_date_measured_date  			bmi_measured_date
 
 /* CREATE BINARY VARIABLES====================================================*/
-*  Make indicator variables for all conditions where relevant 
+*  Make indicator variables for all conditions where relevant
 
 foreach var of varlist 	chronic_respiratory_disease ///
 						chronic_cardiac_disease  ///
@@ -412,37 +405,37 @@ foreach var of varlist 	chronic_respiratory_disease ///
 						calcium_channel_blockers ///
 						combination_bp_meds ///
 						spironolactone  ///
-						thiazide_diuretics ///						
+						thiazide_diuretics ///
 						{
-						
-	/* date ranges are applied in python, so presence of date indicates presence of 
-	  disease in the correct time frame */ 
+
+	/* date ranges are applied in python, so presence of date indicates presence of
+	  disease in the correct time frame */
 	local newvar =  substr("`var'", 1, length("`var'") - 5)
 	gen `newvar' = (`var'!=. )
 	order `newvar', after(`var')
 	safetab `newvar'
-	
+
 }
 
 
 /*  Body Mass Index  */
 * NB: watch for missingness
 
-* Recode strange values 
-replace bmi = . if bmi == 0 
+* Recode strange values
+replace bmi = . if bmi == 0
 replace bmi = . if !inrange(bmi, 15, 50)
 
-* Restrict to within 10 years of index and aged > 16 
+* Restrict to within 10 years of index and aged > 16
 gen bmi_time = (indexdate - bmi_measured_date)/365.25
 gen bmi_age = age - bmi_time
 
-replace bmi = . if bmi_age < 16 
-replace bmi = . if bmi_time > 10 & bmi_time != . 
+replace bmi = . if bmi_age < 16
+replace bmi = . if bmi_time > 10 & bmi_time != .
 
-* Set to missing if no date, and vice versa 
-replace bmi = . if bmi_measured_date == . 
-replace bmi_measured_date = . if bmi == . 
-replace bmi_measured = . if bmi == . 
+* Set to missing if no date, and vice versa
+replace bmi = . if bmi_measured_date == .
+replace bmi_measured_date = . if bmi == .
+replace bmi_measured = . if bmi == .
 
 * BMI (NB: watch for missingness)
 gen 	bmicat = .
@@ -469,7 +462,7 @@ recode bmicat 1/3 .u = 1 4=2 5=3 6=4, gen(obese4cat)
 label define obese4cat 	1 "No record of obesity" 	///
 						2 "Obese I (30-34.9)"		///
 						3 "Obese II (35-39.9)"		///
-						4 "Obese III (40+)"		
+						4 "Obese III (40+)"
 label values obese4cat obese4cat
 order obese4cat, after(bmicat)
 
@@ -502,32 +495,32 @@ recode bmicat_sa 1/3 .u = 1 4=2 5=3 6=4, gen(obese4cat_sa)
 label define obese4cat_sa 	1 "No record of obesity" 	///
 						2 "Obese I (30-34.9 / 27.5-32.5)"		///
 						3 "Obese II (35-39.9 / 32.5- 37.4)"		///
-						4 "Obese III (40+ / 37.5+)"		
+						4 "Obese III (40+ / 37.5+)"
 label values obese4cat_sa obese4cat_sa
 order obese4cat_sa, after(bmicat_sa)
 
 
 /*  Smoking  */
 
-* Smoking 
+* Smoking
 label define smoke 1 "Never" 2 "Former" 3 "Current" .u "Unknown (.u)"
 
 gen     smoke = 1  if smoking_status == "N"
 replace smoke = 2  if smoking_status == "E"
 replace smoke = 3  if smoking_status == "S"
 replace smoke = .u if smoking_status == "M"
-replace smoke = .u if smoking_status == "" 
+replace smoke = .u if smoking_status == ""
 
 label values smoke smoke
 drop smoking_status
 
 * Create non-missing 3-category variable for current smoking
-* Assumes missing smoking is never smoking 
+* Assumes missing smoking is never smoking
 recode smoke .u = 1, gen(smoke_nomiss)
 order smoke_nomiss, after(smoke)
 label values smoke_nomiss smoke
 
-/* CLINICAL COMORBIDITIES */ 
+/* CLINICAL COMORBIDITIES */
 
 /*  Cancer */
 label define cancer 1 "Never" 2 "Last year" 3 "2-5 years ago" 4 "5+ years"
@@ -545,13 +538,13 @@ label values cancer_cat cancer
 /*  Immunosuppression  */
 
 * Immunosuppressed:
-* Permanent immunodeficiency ever, OR 
+* Permanent immunodeficiency ever, OR
 * Temporary immunodeficiency  last year
 gen temp1  = 1 if perm_immunodef_date!=.
 gen temp2  = inrange(temp_immunodef_date, (indexdate - 365), indexdate)
 
 egen other_immuno = rowmax(temp1 temp2)
-drop temp1 temp2 
+drop temp1 temp2
 order other_immuno, after(temp_immunodef)
 
 /*  Blood pressure   */
@@ -560,7 +553,7 @@ order other_immuno, after(temp_immunodef)
 gen     bpcat = 1 if bp_sys < 120 &  bp_dias < 80
 replace bpcat = 2 if inrange(bp_sys, 120, 130) & bp_dias<80
 replace bpcat = 3 if inrange(bp_sys, 130, 140) | inrange(bp_dias, 80, 90)
-replace bpcat = 4 if (bp_sys>=140 & bp_sys<.) | (bp_dias>=90 & bp_dias<.) 
+replace bpcat = 4 if (bp_sys>=140 & bp_sys<.) | (bp_dias>=90 & bp_dias<.)
 replace bpcat = .u if bp_sys>=. | bp_dias>=. | bp_sys==0 | bp_dias==0
 
 label define bpcat 1 "Normal" 2 "Elevated" 3 "High, stage I"	///
@@ -576,7 +569,7 @@ gen bphigh = (bpcat==4)
 /*  Hypertension  */
 
 gen htdiag_or_highbp = bphigh
-recode htdiag_or_highbp 0 = 1 if hypertension==1 
+recode htdiag_or_highbp 0 = 1 if hypertension==1
 
 
 ************
@@ -584,8 +577,8 @@ recode htdiag_or_highbp 0 = 1 if hypertension==1
 ************
 
 * Set implausible creatinine values to missing (Note: zero changed to missing)
-replace creatinine = . if !inrange(creatinine, 20, 3000) 
-	
+replace creatinine = . if !inrange(creatinine, 20, 3000)
+
 * Divide by 88.4 (to convert umol/l to mg/dl)
 gen SCr_adj = creatinine/88.4
 
@@ -611,7 +604,7 @@ label var egfr "egfr calculated using CKD-EPI formula with no eth"
 egen egfr_cat = cut(egfr), at(0, 30, 60, 5000)
 
 label define egfr_cat 5000 "None" 60 "Stage 3 egfr 30-6" 30 "Stage 4/5 egfr<30"
-label values egfr_cat egfr_cat 
+label values egfr_cat egfr_cat
 lab var  egfr_cat "CKD category"
 safetab egfr_cat
 
@@ -629,15 +622,15 @@ tab egfr60
 replace hba1c_percentage   = . if hba1c_percentage <= 0
 replace hba1c_mmol_per_mol = . if hba1c_mmol_per_mol <= 0
 
-/* Express  HbA1c as percentage  */ 
+/* Express  HbA1c as percentage  */
 
-* Express all values as perecentage 
-noi summ hba1c_percentage hba1c_mmol_per_mol 
-gen 	hba1c_pct = hba1c_percentage 
-replace hba1c_pct = (hba1c_mmol_per_mol/10.929)+2.15 if hba1c_mmol_per_mol<. 
+* Express all values as perecentage
+noi summ hba1c_percentage hba1c_mmol_per_mol
+gen 	hba1c_pct = hba1c_percentage
+replace hba1c_pct = (hba1c_mmol_per_mol/10.929)+2.15 if hba1c_mmol_per_mol<.
 
 * Valid % range between 0-20  /195 mmol/mol
-replace hba1c_pct = . if !inrange(hba1c_pct, 0, 20) 
+replace hba1c_pct = . if !inrange(hba1c_pct, 0, 20)
 replace hba1c_pct = round(hba1c_pct, 0.1)
 
 
@@ -710,16 +703,16 @@ safetab  carehometype carehome
 
 /* OUTCOME (AND SURVIVAL TIME)==================================================*/
 /*
-Outcome summary: 
+Outcome summary:
  - to start with am going to do logistic regression
  - outcome is infection
- - am looking to see for all people included on 02 February 2020, for those that had no record of having COVID-19 on this date, what is the 
+ - am looking to see for all people included on 02 February 2020, for those that had no record of having COVID-19 on this date, what is the
    association between (1) household size and (2) getting COVID at any time between 02 February and the latest date of data collection
  - the codelists that I need for this are as follows, so need to make sure these are in the study definition and in the codelist file:
         - COVID identification in primary care - probable covid - clinical code
         - COVID identification in primary care - probable covid - positive test
         - COVID identification in primary care - probable covid - sequelae
-- checked and they are in the codelists.txt file already, now need to check what they are called and how they have been handled in the 
+- checked and they are in the codelists.txt file already, now need to check what they are called and how they have been handled in the
   study definition
 - checked and updated study definition so that "primary_care_case" included covid_primary_care_code, covid_primary_care_positive_test,
 covid_primary_care_sequalae
@@ -737,7 +730,7 @@ replace case=1 if caseDate!=""
 *create a total number of cases in the household variable
 bysort hh_id:egen totCasesInHH=total(case)
 la var totCasesInHH "Total number of cases in a specific household"
-	
+
 *drop households with one person or more than 9, order and rename variables
 tab hh_size
 
@@ -758,13 +751,13 @@ gen onscoviddeath_date = onsdeath_date if died_ons_covid_flag_any == 1
 gen onsconfirmeddeath_date = onsdeath_date if died_ons_confirmedcovid_flag_any ==1
 gen onssuspecteddeath_date = onsdeath_date if died_ons_suspectedcovid_flag_any ==1
 
-* Date of non-COVID death in ONS 
+* Date of non-COVID death in ONS
 * If missing date of death resulting died_date will also be missing
 gen ons_noncoviddeath_date = onsdeath_date if died_ons_covid_flag_any != 1
 
 
 /* CONVERT STRINGS TO DATE FOR OUTCOME VARIABLES =============================*/
-* Recode to dates from the strings 
+* Recode to dates from the strings
 *gen dummy date for severe and replace later on
 gen severe_date=ae_date
 
@@ -773,7 +766,7 @@ foreach var of global outcomes {
 	rename `var'_date `var'_dstr
 	gen `var'_date = date(`var'_dstr, "YMD")
 	drop `var'_dstr
-	format `var'_date %td 
+	format `var'_date %td
 
 }
 
@@ -790,7 +783,7 @@ foreach i of global outcomes {
 rename dereg_date dereg_dstr
 	gen dereg_date = date(dereg_dstr, "YMD")
 	drop dereg_dstr
-	format dereg_date %td 
+	format dereg_date %td
 
 * Binary indicators for outcomes
 foreach i of global outcomes {
@@ -811,7 +804,7 @@ gen severe=1 if ae==1 | icu==1 | onscoviddeath==1
 
 /*
 /* CENSORING */
-/* SET FU DATES===============================================================*/ 
+/* SET FU DATES===============================================================*/
 
 * Censoring dates for each outcome (last date outcome data available) - kw note: these are what were included for Rohini ethnicity (copied wed 12th Aug, may need updated).
 *https://github.com/opensafely/rapid-reports/blob/master/notebooks/latest-dates.ipynb
@@ -839,7 +832,7 @@ sum *censor_date, format
 *******************************
 
 
-* BMI 
+* BMI
 * Set implausible BMIs to missing:
 replace bmi = . if !inrange(bmi, 15, 50)
 
@@ -861,17 +854,17 @@ foreach i of global outcomes {
 }
 
 * Format date variables
-format  stime* %td 
+format  stime* %td
 
 *distribution of outcome dates
 foreach i of global outcomes {
-	histogram `i'_date, discrete width(15) frequency ytitle(`i') xtitle(Date) scheme(meta) 
+	histogram `i'_date, discrete width(15) frequency ytitle(`i') xtitle(Date) scheme(meta)
 graph export "$Tabfigdir/outcome_`i'_freq.svg", as(svg) replace
 }
 */
 
 /* LABEL VARIABLES============================================================*/
-*  Label variables you are intending to keep, drop the rest 
+*  Label variables you are intending to keep, drop the rest
 *KW note: for the first run of this, I am just going to keep the bare minimum variables and then can come back and add more
 
 *HH variable
@@ -911,7 +904,7 @@ lab var hba1c_mmol_per_mol			"HbA1c mmo/mol"
 lab var hba1c_percentage			"HbA1c %"
 lab var gp_consult_count			"Number of GP consultations in the 12 months prior to baseline"
 
-* Comorbidities of interest 
+* Comorbidities of interest
 label var asthma						"Asthma category"
 lab var asthmacat						"Asthma detailed categories"
 label var hypertension				    "Diagnosed hypertension"
@@ -922,9 +915,9 @@ label var dm_type_exeter_os				"Diabetes type (Exeter definition)"
 label var cancer						"Cancer"
 label var other_immuno					"Immunosuppressed (combination algorithm)"
 label var chronic_liver_disease 		"Chronic liver disease"
-label var other_neuro 					"Neurological disease"			
+label var other_neuro 					"Neurological disease"
 label var stroke		 			    "Stroke"
-lab var dementia						"Dementia"							
+lab var dementia						"Dementia"
 label var ra_sle_psoriasis				"Autoimmune disease"
 lab var egfr							"eGFR"
 lab var egfr_cat						"CKD category defined by eGFR"
@@ -943,8 +936,8 @@ label var diabetes_date						"Diabetes Date"
 label var cancer_date 						"Cancer Date"
 label var chronic_liver_disease_date  		"Chronic liver disease Date"
 label var other_neuro_date 					"Neurological disease  Date"
-label var stroke_date			    		"Stroke date"		
-label var dementia_date						"DDementia date"					
+label var stroke_date			    		"Stroke date"
+label var dementia_date						"DDementia date"
 label var ra_sle_psoriasis_date 			"Autoimmune disease  Date"
 lab var perm_immunodef_date  				"Permanent immunosuppression date"
 lab var temp_immunodef_date   				"Temporary immunosuppression date"
@@ -953,7 +946,7 @@ lab var hba1c_percentage_date				"HbA1c % date"
 lab var hba1c_pct							"HbA1c %"
 lab var hba1ccat							"HbA1c category"
 lab var hba1c75								"HbA1c >= 7.5%"
-lab var diabcat								"Diabetes and HbA1c combined" 
+lab var diabcat								"Diabetes and HbA1c combined"
 
 
 *medications
@@ -977,7 +970,7 @@ lab var betablockers_date 					"Beta blocker in last 12 months"
 lab var calcium_channel_blockers_date 		"CCB in last 12 months"
 lab var combination_bp_meds_date 			"BP med in last 12 months"
 lab var spironolactone_date 				"Spironolactone in last 12 months"
-lab var 
+lab var
 
 *combine variables that we decided to combine for the households analysis
 /*in particular
@@ -1032,9 +1025,9 @@ la var cpnsdeath_date "Date of death recorded in CPNS"
 *  Drop variables that are not needed (those not labelled)
 ds, not(varlabel)
 drop `r(varlist)'
-	
 
-/* APPLY INCLUSION/EXCLUIONS==================================================*/ 
+
+/* APPLY INCLUSION/EXCLUIONS==================================================*/
 
 safecount
 
@@ -1045,7 +1038,7 @@ safecount
 noi di "DROP IF DIED BEFORE INDEX"
 
 *fix death dates
-order patient_id age hh_id hh_size case case_date indexdate onsdeath_date cpnsdeath_date 
+order patient_id age hh_id hh_size case case_date indexdate onsdeath_date cpnsdeath_date
 *need to sort out deathdates
 local vars case_date onsdeath_date cpnsdeath_date
 
@@ -1054,7 +1047,7 @@ foreach var of local vars {
 	rename `var' `var'_dstr
 	gen `var' = date(`var'_dstr, "YMD")
 	drop `var'_dstr
-	format `var' %td 
+	format `var' %td
 }
 
 
@@ -1068,7 +1061,7 @@ drop if case_date<date("20200101", "YMD")
 hist case_date
 
 
-safecount 
+safecount
 sort patient_id
 save hh_analysis_datasetALLVARS.dta, replace
 
@@ -1135,7 +1128,7 @@ label define rural_urbanLabel 1 "urban major conurbation" ///
 							  6 "rural town and fringe in a sparse setting" ///
 							  7 "rural village and dispersed" ///
 							  8 "rural village and dispersed in a sparse setting" ///
-							  
+
 label values rural_urban rural_urbanLabel
 tab rural_urban, miss
 
@@ -1208,60 +1201,4 @@ label values bmicat bmicatLabel
 
 
 save hh_analysis_dataset.dta, replace
-
-
-****************************CREATE VO DATASET FOR TESTNG ONS SERVER********
-cd ${outputData}
-
-clear all
-
-/*
-import delimited "E:\cohorts\households-research\output\input.csv", encoding(ISO-8859-2)
-save input.dta, replace
-*/
-import delimited "E:\cohorts\households-research\analysis\vo_data.csv", varnames(1) encoding(UTF-8) clear
-
-
-
-/*
-
-****************************************************************
-*  Create outcome specific datasets for the whole population  *
-*****************************************************************
-
-
-foreach i of global outcomes {
-	use "$Tempdir/analysis_dataset.dta", clear
-	
-	drop if `i'_date <= indexdate 
-
-	stset stime_`i', fail(`i') 				///	
-	id(patient_id) enter(indexdate) origin(indexdate)
-	save "$Tempdir/analysis_dataset_STSET_`i'.dta", replace
-}	
-
-
-****************************************************************
-*  Create outcome specific datasets for those with evidence of infection  *
-*****************************************************************
-use "$Tempdir/analysis_dataset.dta", clear
-
-keep if confirmed==1 | positivetest==1
-safecount
-gen infected_date=min(confirmed_date, positivetest_date)
-save "$Tempdir/analysis_dataset_infected.dta", replace
-
-foreach i of global outcomes2 {
-	use "$Tempdir/analysis_dataset_infected.dta", clear
-	
-	drop if `i'_date <= infected_date 
-
-	stset stime_`i', fail(`i') 				///	
-	id(patient_id) enter(infected_date) origin(infected_date)
-	save "$Tempdir/analysis_dataset_STSET_`i'_infected.dta", replace
-}	
-
-	
-* Close log file 
-log close
 
