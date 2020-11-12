@@ -41,6 +41,8 @@ actions:
     outputs:
       moderately_sensitive:
         log: generate_model_data.log
+        timeseries: output/case_series.pickle
+        agecats: output/age_categories_series.pickle
 
   run_model:
     run: python:latest python analysis/opensafely_age_hh.py
