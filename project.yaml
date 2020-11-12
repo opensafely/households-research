@@ -36,7 +36,7 @@ actions:
         vo: vo.txt
 
   generate_model_data:
-    run: python:latest python analysis/generate_model_data.py test_data
+    run: python:latest python analysis/generate_model_data.py
     needs: [prepare_data]
     outputs:
       moderately_sensitive:
