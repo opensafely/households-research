@@ -3,7 +3,6 @@ version: "3.0"
 expectations:
   population_size: 1000
 
-
 actions:
   generate_cohort:
     run: cohortextractor:latest generate_cohort
@@ -29,13 +28,6 @@ actions:
         hhsize: analysis/hh_sizes.png
         cases: analysis/hh_cases_*.png
 
-    run: jupyter:latest jupyter nbconvert /workspace/analysis/opensafely_age_hh.ipynb --execute --to html --output-dir=/workspace --ExecutePreprocessor.timeout=86400
-    needs: [prepare_data]
-    outputs:
-      moderately_sensitive:
-        notebook: opensafely_age_hh.html
-        notebook_log: analysis/opensafely_age_hh.log
-
   vo_test:
     run: python:latest python analysis/fit_vo.py 20
     needs: []
@@ -43,9 +35,16 @@ actions:
       moderately_sensitive:
         vo: vo.txt
 
-  os_test:
-    run: python:latest python analysis/opensafely_age_hh.py
+  generate_model_data:
+    run: python:latest python analysis/generate_model_data.py test_data
     needs: [prepare_data]
+    outputs:
+      moderately_sensitive:
+        log: generate_model_data.log
+
+  run_model:
+    run: python:latest python analysis/opensafely_age_hh.py
+    needs: [generate_model_data]
     outputs:
       moderately_sensitive:
         log: opensafely_age_hh.log

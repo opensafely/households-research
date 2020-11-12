@@ -11,11 +11,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import logging
 import numba
+import pathlib
 import os
 import sys
+import pickle
+
+
+homedir = pathlib.Path(__file__).resolve().parent.parent
 
 logging.basicConfig(
-    filename="./opensafely_age_hh.log",
+    filename=homedir / "opensafely_age_hh.log",
     # stream=sys.stdout,
     level=logging.INFO,
     format="%(asctime)s %(message)s",
@@ -23,57 +28,23 @@ logging.basicConfig(
 logging.info("Libraries imported and logging started")
 
 
-# # CHANGE THE NEXT CELL
-#
-# The next set of cell is the one that would need changing for a different data source in the same format
-#
-
-if os.path.exists("hh_analysis_datasetALLVARS.dta"):
-    df = pd.read_stata(
-        "hh_analysis_datasetALLVARS.dta", columns=["hh_id", "age", "case"]
-    )
-else:
-    # test data
-    np.random.seed(42)
-
-    df = pd.DataFrame()
-    age_list = range(0, 100)
-    case_list = [0] * 100 + [1]
-    hh_id_list = range(0, 10000)
-    patient_count = 30000
-    df["hh_id"] = np.random.choice(hh_id_list, size=patient_count)
-    df["age"] = np.random.choice(age_list, size=patient_count)
-    df["case"] = np.random.choice(case_list, size=patient_count)
-
-
-logging.info("Data Read In")
-
-# # Data pre-processing
-#
-# There are two major outputs for each household: a vector y of outcomes and a design matrix X. These are stored in arrays of length equal to the number of households Y and XX respectively.
-#
-
-
 # This is the number of age classes; here we will follow Roz's interests and consider two young ages
 
 nages = 2
-hhnums = df.hh_id.unique()
 
 optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
-# XX and Y are lists of int64
-def get_storage_lists(df):
-    age_bins = [-1, 9, 18, 200]
-    age_bitmasks = [2, 1, 0]
-    df["age_labels"] = pd.cut(df["age"], bins=age_bins, labels=age_bitmasks, right=True)
 
-    grouped = df.groupby("hh_id")
-    Y = grouped["case"].apply(np.array).to_numpy()
-    XX = grouped["age_labels"].apply(np.array).to_numpy()
-    return numba.typed.List(Y), numba.typed.List(XX)
+with open("output/case_series.pickle", "rb") as f:
+    Y = pickle.load(f)
+with open("output/age_categories_series.pickle", "rb") as f:
+    XX = pickle.load(f)
 
+XX = numba.typed.List(XX)
+Y = numba.typed.List(Y)
 
-Y, XX = get_storage_lists(df)
+hhnums = len(Y)
+assert hhnums == len(XX)
 
 logging.info("Data pre-processing completed")
 
@@ -111,8 +82,8 @@ def mynll(x, Y, XX):
         alpha = x[3 : (3 + nages)]
         beta = x[(3 + nages) : (3 + 2 * nages)]
         gamma = x[(3 + 2 * nages) :]
-        nlv = np.zeros(len(hhnums))  # Vector of negative log likelihoods
-        for i in range(0, len(hhnums)):
+        nlv = np.zeros(hhnums)  # Vector of negative log likelihoods
+        for i in range(0, hhnums):
             y = Y[i]
             # At this point, X is a np.array whose elements are an int
             # representing the classfication of each household member's age. We
