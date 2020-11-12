@@ -61,37 +61,19 @@ hhnums = df.hh_id.unique()
 
 optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
+# XX and Y are lists of int64
+def get_storage_lists(df):
+    age_bins = [-1, 9, 18, 200]
+    age_bitmasks = [2, 1, 0]
+    df["age_labels"] = pd.cut(df["age"], bins=age_bins, labels=age_bitmasks, right=True)
 
-@numba.jit(nopython=True, cache=True)
-def get_y_and_xx(hh_ages, hh_cases):
-    m = len(hh_ages)
-    myx = np.zeros((m, nages))
-    myy = np.zeros(m)
-    for j, a in enumerate(hh_ages):
-        if a <= 9:
-            myx[j, :] = np.array([1, 0])
-        elif (a > 9) and (a <= 18):
-            myx[j, :] = np.array([0, 1])
-        if hh_cases[j] == 1:
-            myy[j] = 1
-    return myy, np.atleast_2d(myx)
+    grouped = df.groupby("hh_id")
+    Y = grouped["case"].apply(np.array).to_numpy()
+    XX = grouped["age_labels"].apply(np.array).to_numpy()
+    return numba.typed.List(Y), numba.typed.List(XX)
 
 
-def get_storage_lists():
-    Y = numba.typed.List()  # To store outcomes
-    XX = numba.typed.List()  # To store design matrices
-    for num in hhnums:
-        dfh = df[df.hh_id == num]
-        y, xx = get_y_and_xx(dfh.age.values, dfh.case.values)
-        Y.append(y)
-        XX.append(xx)
-    return Y, XX
-
-
-
-
-Y, XX = get_storage_lists()
-
+Y, XX = get_storage_lists(df)
 
 logging.info("Data pre-processing completed")
 
@@ -115,7 +97,7 @@ def phi(s, logtheta=0.0):
 
 @numba.jit(nopython=True, cache=True)
 def decimal_to_bit_array(d, n_digits):
-    powers_of_two = 2 ** np.arange(32)[::-1]
+    powers_of_two = int(2) ** np.arange(32)[::-1]
     return ((d & powers_of_two) / powers_of_two)[-n_digits:]
 
 
@@ -132,8 +114,19 @@ def mynll(x, Y, XX):
         nlv = np.zeros(len(hhnums))  # Vector of negative log likelihoods
         for i in range(0, len(hhnums)):
             y = Y[i]
-            X = XX[i]
-            if np.all(y == 0.0):
+            # At this point, X is a np.array whose elements are an int
+            # representing the classfication of each household member's age. We
+            # need to turn this into an ndarray whose rows are bitarrays
+            # representating this age.
+            #
+            # To do this in a numba-compliant way, we need to make a
+            #  list-of-lists before casting to an ndarray.
+            X = []
+            for age in XX[i]:
+                X.append(list(decimal_to_bit_array(age, 2)))
+            X = np.array(X)
+
+            if np.all(y == 0):
                 nlv[i] = np.exp(llaG) * np.sum(np.exp(alpha @ (X.T)))
             else:
                 # Sort to go zeros then ones WLOG (could do in pre-processing)
