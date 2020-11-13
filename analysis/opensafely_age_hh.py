@@ -60,19 +60,19 @@ logging.info("Data pre-processing completed, %s households loaded", hhnums)
 #
 
 
-@numba.jit(nopython=True, cache=True)
+@numba.jit(nopython=True)
 def phi(s, logtheta=0.0):
     theta = np.exp(logtheta)
     return (1.0 + theta * s) ** (-1.0 / theta)
 
 
-@numba.jit(nopython=True, cache=True)
+@numba.jit(nopython=True)
 def decimal_to_bit_array(d, n_digits):
     powers_of_two = int(2) ** np.arange(32)[::-1]
     return ((d & powers_of_two) / powers_of_two)[-n_digits:]
 
 
-@numba.jit(nopython=True, cache=True)
+@numba.jit(nopython=True)
 def mynll(x, Y, XX):
 
     if True:  # Ideally catch the linear algebra fail directly
@@ -184,6 +184,11 @@ fout = op.minimize(
 )
 xhat = fout.x
 logging.info(fout)
+if not xhat.success:
+    logging.info("No convergence. Exiting.")
+    sys.exit(0)
+
+
 pn = len(x0)
 delta = 1e-2  # This finite difference needs some unavoidable tuning by hand
 dx = delta * xhat
