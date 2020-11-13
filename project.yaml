@@ -49,11 +49,11 @@ actions:
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
-        log: opensafely_age_hh.log
+        log: opensafely_age_hh_with_ridge.log
 
   run_model_no_ridge:
     run: python:latest python analysis/opensafely_age_hh.py
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
-        log: opensafely_age_hh.log
+        log: opensafely_age_hh_without_ridge.log
