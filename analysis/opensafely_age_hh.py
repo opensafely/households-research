@@ -17,10 +17,15 @@ import sys
 import pickle
 
 
+increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
+if increase_nll:
+    logname = "opensafely_age_hh_with_ridge.log"
+else:
+    logname = "opensafely_age_hh_without_ridge.log"
 homedir = pathlib.Path(__file__).resolve().parent.parent
 
 logging.basicConfig(
-    filename=homedir / "opensafely_age_hh.log",
+    filename=homedir / logname,
     # stream=sys.stdout,
     level=logging.INFO,
     format="%(asctime)s %(message)s",
