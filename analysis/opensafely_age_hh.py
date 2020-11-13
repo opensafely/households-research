@@ -146,7 +146,7 @@ logging.info("Helper functions defined")
 
 # Starting parameters - and check that the target function evaluates OK at them
 
-x0 = np.array([-2.0, -2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,])
+x0 = np.array([-2.0, -5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,])
 mynll(x0, Y, XX)
 
 
@@ -160,7 +160,7 @@ def callbackF(x):
 bb = np.array(
     [
         [-5.0, 0.0],
-        [-5.0, 0.0],
+        [-7.0, -3.0],
         [-10.0, 10.0],
         [-3.0, 3.0],
         [-3.0, 3.0],
