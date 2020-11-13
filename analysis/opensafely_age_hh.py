@@ -184,7 +184,7 @@ fout = op.minimize(
 )
 xhat = fout.x
 logging.info(fout)
-if not xhat.success:
+if not fout.success:
     logging.info("No convergence. Exiting.")
     sys.exit(0)
 
