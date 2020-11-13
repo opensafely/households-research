@@ -46,7 +46,7 @@ Y = numba.typed.List(Y)
 hhnums = len(Y)
 assert hhnums == len(XX)
 
-logging.info("Data pre-processing completed")
+logging.info("Data pre-processing completed, %s households loaded", hhnums)
 
 
 # # Define functions
