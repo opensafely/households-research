@@ -215,8 +215,10 @@ for j in range(0, pn):
     )
     ej[j] = 0.0
 Hinv += np.triu(Hinv.T, 1)
-Hinv /= 4.0 * np.outer(dx, dx) + np.diag(
-    8.0 * dx ** 2
+# We get some divide by zero warnings here. Investigate with
+# np.seterr(all=None, divide=None, over=None, under=None, invalid="raise")
+Hinv = Hinv / (
+    4.0 * np.outer(dx, dx) + np.diag(8.0 * dx ** 2)
 )  # TO DO: replace with a chol ...
 covmat = LA.inv(0.5 * (Hinv + Hinv.T))
 stds = np.sqrt(np.diag(covmat))
