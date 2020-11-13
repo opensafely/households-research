@@ -34,6 +34,7 @@ nages = 2
 
 optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
+increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
 
 with open("output/case_series.pickle", "rb") as f:
     Y = pickle.load(f)
@@ -125,8 +126,8 @@ def mynll(x, Y, XX):
                             )
                 nlv[i] = -np.log(LA.solve(BB, np.ones(r))[-1])
         nll = np.sum(nlv)
-
-        nll += 7.4 * np.sum(x ** 2)  # Comment out this Ridge if not needed
+        if increase_nll:
+            nll += 7.4 * np.sum(x ** 2)  # Comment out this Ridge if not needed
 
         return nll
     else:

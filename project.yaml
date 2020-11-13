@@ -44,7 +44,14 @@ actions:
         timeseries: output/case_series.pickle
         agecats: output/age_categories_series.pickle
 
-  run_model:
+  run_model_with_ridge:
+    run: python:latest python analysis/opensafely_age_hh.py increase_nll
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh.log
+
+  run_model_no_ridge:
     run: python:latest python analysis/opensafely_age_hh.py
     needs: [generate_model_data]
     outputs:
