@@ -25,12 +25,18 @@ use inputWithHHDependencies.dta, clear
 */
 
 cd ${outputData}
+
 clear all
+
 /*
 import delimited "E:\cohorts\households-research\output\input.csv", encoding(ISO-8859-2)
 save input.dta, replace
 */
-use inputDummy.dta, clear
+import delimited "E:\cohorts\households-research\output\input.csv", clear
+
+hist age
+
+use input.dta, clear
 
 
 * Open a log file
@@ -202,11 +208,6 @@ label values agegroup agegroup
 **************************** HOUSEHOLD VARS*******************************************
 *update with UPRN data
 
-
-*Total number people in household (to check hh size)
-*maximum of 10 people in a household
-bysort hh_id: gen hh_total=_N
-
 sum hh_total hh_size
 *gen categories of household size - KW will use actual household sizes in analysis but will leave this in so easy to find where it is used in Rohini analysis files.
 gen hh_total_cat=.
@@ -240,10 +241,40 @@ drop if hh_size<=1
 drop if hh_size>10
 tab hh_size
 
-*rename case date
-rename primary_care_case caseDate
-generate case=0
-replace case=1 if caseDate!=""
+
+*create household composition variable
+*edited dataset that only contains variables that will be used in the regression analysis (and were for shared in dummydata with Thomas and Heather)
+*create the age variable that I want
+egen ageCat=cut(age), at (0, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 120)
+recode ageCat 0=1 5=2 10=3 15=4 20=5 30=6 40=7 50=8 60=9 70=10 80=11 90=12 
+label define ageCatLabel 1 "0-4" 2 "5-9" 3 "10-14" 4 "15-19" 5 "20-29" 6 "30-39" 7 "40-49" 8 "50-59" 9 "60-69" 10 "70-79" 11 "80-89" 12 "90+"
+label values ageCat ageCatLabel
+tab ageCat, miss
+la var ageCat "Categorised age"
+*now creat the household composition variable that takes account of age of the person and the size of the house that they are in
+*this doesn't take account of the ages of the other people in the house though?
+generate hh_composition=.
+la var hh_composition "Combination of person's age and household size'"
+levelsof ageCat, local(ageLevels)
+local count=0
+foreach l of local ageLevels {
+	levelsof hh_size, local(hh_sizeLevels)
+	foreach m of local hh_sizeLevels {
+		local count=`count'+1
+		display `count'
+		replace hh_composition=`count' if ageCat==`l' & hh_size==`m'
+	}	
+}
+order age hh_size hh_composition
+tab hh_composition
+
+*create a key for the hh composition variable
+preserve
+    describe, replace clear
+    list
+    export excel using hhCompositionKey.xlsx, replace first(var)
+restore
+
 
 ****************************
 *  Create required cohort  *
@@ -695,6 +726,17 @@ covid_primary_care_sequalae
 */
 
 *Think we only need the outcome that is the 3 primary types of probable primary care codes
+
+*rename case date
+rename primary_care_case caseDate
+generate case=0
+replace case=1 if caseDate!=""
+*add people who had confirmed covid death as cases
+
+
+*create a total number of cases in the household variable
+bysort hh_id:egen totCasesInHH=total(case)
+la var totCasesInHH "Total number of cases in a specific household"
 	
 *drop households with one person or more than 9, order and rename variables
 tab hh_size
@@ -719,7 +761,6 @@ gen onssuspecteddeath_date = onsdeath_date if died_ons_suspectedcovid_flag_any =
 * Date of non-COVID death in ONS 
 * If missing date of death resulting died_date will also be missing
 gen ons_noncoviddeath_date = onsdeath_date if died_ons_covid_flag_any != 1
-
 
 
 /* CONVERT STRINGS TO DATE FOR OUTCOME VARIABLES =============================*/
@@ -759,6 +800,9 @@ foreach i of global outcomes {
 }
 
 order patient_id age hh_id hh_size case case_date ethnicity
+
+*update case variable so that those wwho died of confirmed covid are also considered cases
+
 
 /*
 drop severe
@@ -933,7 +977,23 @@ lab var betablockers_date 					"Beta blocker in last 12 months"
 lab var calcium_channel_blockers_date 		"CCB in last 12 months"
 lab var combination_bp_meds_date 			"BP med in last 12 months"
 lab var spironolactone_date 				"Spironolactone in last 12 months"
-lab var thiazide_diuretics_date				"TZD in last 12 months"
+lab var 
+
+*combine variables that we decided to combine for the households analysis
+/*in particular
+ - shielding (shielding status)
+ - comorb_Neuro (grouped neurological diseases)
+ - comorb_Immunosuppression (grouped immunosupression or autoimmune disease)
+*/
+generate comorb_Neuro=0
+la var comorb_Neuro "grouped stroke, dementia, other neurological diseases"
+replace comorb_Neuro=1 if stroke==1|dementia==1|other_neuro==1
+generate comorb_Immunosuppression=0
+la var comorb_Immunosuppression "grouped immunosupression or autoimmune diseases"
+replace comorb_Immunosuppression=1 if perm_immunodef==1|temp_immunodef==1|other_immuno==1|ra_sle_psoriasis==1
+*placeholder variable for shielding until I've decided what to do with it i.e. won't it be colinear as is made up of other conditions?
+generate shielding=.
+la var shielding "met criteria for shielding - EMPTY FOR NOW"
 
 * Outcomes and follow-up
 
@@ -1001,44 +1061,39 @@ foreach var of local vars {
 drop if onsdeath_date <= indexdate
 drop if cpnsdeath_date <= indexdate
 
+
+*drop cases that are dates prior to Jan012020
+drop if case_date<date("20200101", "YMD")
+*overall histograms
+hist case_date
+
+
 safecount 
 sort patient_id
 save hh_analysis_datasetALLVARS.dta, replace
 
 
-*edited dataset that only contains variables for the regression analysis for sharing with Thomas and Heather
-*create the age variable that I want
-egen ageCat=cut(age), at (0, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 120)
-recode ageCat 0=1 5=2 10=3 15=4 20=5 30=6 40=7 50=8 60=9 70=10 80=11 90=12 
-label define ageCatLabel 1 "0-4" 2 "5-9" 3 "10-14" 4 "15-19" 5 "20-29" 6 "30-39" 7 "40-49" 8 "50-59" 9 "60-69" 10 "70-79" 11 "80-89" 12 "90+"
-label values ageCat ageCatLabel
-tab ageCat, miss
-la var ageCat "Categorised age"
-*now creat the household composition variable that takes account of age of the person and the size of the house that they are in
-*this doesn't take account of the ages of the other people in the house though?
-generate hh_composition=.
-la var hh_composition "Combination of person's age and household size'"
-levelsof ageCat, local(ageLevels)
-local count=0
-foreach l of local ageLevels {
-	levelsof hh_size, local(hh_sizeLevels)
-	foreach m of local hh_sizeLevels {
-		local count=`count'+1
-		display `count'
-		replace hh_composition=`count' if ageCat==`l' & hh_size==`m'
-	}	
-}
-order age hh_size hh_composition
-tab hh_composition
+*keep the variables I need from the hh analysis
+keep patient_id age ageCat hh_id hh_size hh_composition case_date case eth5 eth16 ethnicity_16 indexdate sex bmicat smoke imd region comorb_Neuro comorb_Immunosuppression shielding chronic_respiratory_disease chronic_cardiac_disease diabetes_date chronic_liver_disease cancer egfr_cat hypertension smoke_nomiss rural_urban
 
+*create a diabetes binary variable
+generate diabetes=0
+replace diabetes=1 if diabetes_date!=.
+la var diabetes "Diabetes"
+tab diabetes
+
+*some other tweaks to vars (may be handled later but did not want to get rid of this code yet)
 *sort out sex and region etc
 tab sex
 generate sex2=.
-replace sex2=0 if sex=="F"
-replace sex2=1 if sex=="M"
-tab sex2
-label define sex2Label 0 "F" 1 "M"
-label values sex2 sex2Label
+replace sex2=1 if sex=="F"
+replace sex2=2 if sex=="M"
+drop sex
+rename sex2 sex
+tab sex
+label define sexLabel 1 "F" 2 "M"
+label values sex sexLabel
+label var sex "Sex"
 
 *sort out region
 generate region2=.
@@ -1051,56 +1106,121 @@ replace region2=5 if region=="South East"
 replace region2=6 if region=="South West"
 replace region2=7 if region=="West Midlands"
 replace region2=8 if region=="Yorkshire and The Humber"
-label define region2Label 0 "East" 1 "East Midlands"  2 "London" 3 "North East" 4 "North West" 5 "South East" 6 "South West" 7 "West Midlands" 8 "Yorkshire and The Humber"
-label values region2 region2Label
 
-drop sex
-rename sex2 sex
 drop region
 rename region2 region
 label var case_date "date of case"
 label var region "region of England"
 
-*create dummy variables shielding
-generate shielding=.
-la var shielding "shielding status"
-
-*create dummy variables comorbidities that are not there already
-generate comorb_Neuro=.
-la var comorb_Neuro "comorbidity  - grouped neurological diseases"
-generate comorb_ImmunoSuppr=.
-la var comorb_ImmunoSuppr "comorbidity - grouped immunosuppression or autoimmune disease"
-
-*keep the variables I need from this dataset, also need to create the dummy variables: shielding and comorbidities
-keep patient_id age hh_id hh_size hh_composition case_date case eth5 indexdate sex bmicat smoke imd region comorb_Neuro comorb_ImmunoSuppr shielding chronic_respiratory_disease chronic_cardiac_disease diabetes chronic_liver_disease cancer egfr_cat hypertension
+label define regionLabel 0 "East" 1 "East Midlands"  2 "London" 3 "North East" 4 "North West" 5 "South East" 6 "South West" 7 "West Midlands" 8 "Yorkshire and The Humber"
+label values region regionLabel
 
 
-save hh_analysis_datasetREDVARS.dta, replace
+*create an IMD variable with two categories
+tab imd
+generate imdBroad=.
+replace imdBroad=1 if imd==1|imd==2|imd==3
+replace imdBroad=2 if imd==4|imd==5
+label define imdBroadLabel 1 "Less deprived" 2 "More deprived"
+label values imdBroad imdBroadLabel
+la var imdBroad "IMD in two categories (1=1-3, 2=4-5)"
 
-*append together 4 of these to send to Thomas and Heather
-use hh_analysis_datasetREDVARS.dta
-save hh_analysis_datasetREDVARS2.dta, replace
-save hh_analysis_datasetREDVARS3.dta, replace 
-save hh_analysis_datasetREDVARS4.dta, replace
+*label the urban rural categories
+replace rural_urban=. if rural_urban<1|rural_urban>8
+label define rural_urbanLabel 1 "urban major conurbation" ///
+							  2 "urban minor conurbation" ///
+							  3 "urban city and town" ///
+							  4 "urban city and town in a sparse setting" ///
+							  5 "rural town and fringe" ///
+							  6 "rural town and fringe in a sparse setting" ///
+							  7 "rural village and dispersed" ///
+							  8 "rural village and dispersed in a sparse setting" ///
+							  
+label values rural_urban rural_urbanLabel
+tab rural_urban, miss
 
-use hh_analysis_datasetREDVARS.dta, clear
-append using hh_analysis_datasetREDVARS2.dta
-append using hh_analysis_datasetREDVARS3.dta
-append using hh_analysis_datasetREDVARS4.dta
-generate patient_idNew=.
-replace patient_idNew=_n
-rename patient_id Orig_patient_id
-rename patient_idNew patient_id
-count
-save 17millionDummyData.dta, replace
+*create a 4 category rural urban variable based upon meeting with Roz 21st October
+generate rural_urbanFive=.
+la var rural_urbanFive "Rural Urban in five categories"
+replace rural_urbanFive=1 if rural_urban==1
+replace rural_urbanFive=2 if rural_urban==2
+replace rural_urbanFive=3 if rural_urban==3|rural_urban==4
+replace rural_urbanFive=4 if rural_urban==5|rural_urban==6
+replace rural_urbanFive=5 if rural_urban==7|rural_urban==8
+label define rural_urbanFiveLabel 1 "Urban major conurbation" 2 "Urban minor conurbation" 3 "Urban city and town" 4 "Rural town and fringe" 5 "Rural village and dispersed"
+label values rural_urbanFive rural_urbanFiveLabel
+tab rural_urbanFive, miss
 
-*create a file of variable names
-use 17millionDummyData.dta, clear
-preserve
-    describe, replace
-    list
-    export excel using varDescriptions.xlsx, replace first(var)
-restore
+*generate a binary rural urban (with missing assigned to urban)
+generate rural_urbanBroad=.
+replace rural_urbanBroad=1 if rural_urban<=4|rural_urban==.
+replace rural_urbanBroad=0 if rural_urban>4 & rural_urban!=.
+label define rural_urbanBroadLabel 0 "Rural" 1 "Urban"
+label values rural_urbanBroad rural_urbanBroadLabel
+tab rural_urbanBroad rural_urban, miss
+label var rural_urbanBroad "Rural-Urban"
+
+*create a hh_size variable with 5 groups
+generate hh_size5cat=.
+replace hh_size5cat=1 if hh_size==2|hh_size==3
+replace hh_size5cat=2 if hh_size==4|hh_size==5
+replace hh_size5cat=3 if hh_size==6|hh_size==7
+replace hh_size5cat=4 if hh_size==8|hh_size==9|hh_size==10
+
+label define hh_size5catLabel 1 "2-3" 2 "4-5" 3 "6-7" 4 "8-10"
+label values hh_size5cat hh_size5catLabel
+tab hh_size5cat hh_size, miss
+
+
+*create smoking variable with an unknwon category
+tab smoke, miss
+replace smoke=4 if smoke==.u
+label define smokeLabel 1 "Never" 2 "Former" 3 "Current" 4 "Unknown"
+label values smoke smokeLabel
+tab smoke
+
+*tying up labelling
+label variable ageCat "Categorised age (years)"
+label define eth5Label 1 "White" 2 "South Asian" 3 "Black" 4 "Mixed" 5 "Other"
+label values eth5 eth5Label
+label define chronic_respiratory_diseaseLabel 0 "No" 1 "Yes"
+label values chronic_respiratory_disease chronic_respiratory_diseaseLabel
+label define chronic_cardiac_diseaseLabel 0 "No" 1 "Yes"
+label values chronic_cardiac_disease chronic_cardiac_diseaseLabel
+label define cancerLabel 0 "No" 1 "Yes"
+label values cancer cancerLabel
+label define chronic_liver_diseaseLabel 0 "No" 1 "Yes"
+label values chronic_liver_disease chronic_liver_diseaseLabel
+label define hypertensionLabel 0 "No" 1 "Yes"
+label values hypertension hypertensionLabel
+label define comorb_NeuroLabel 0 "No" 1 "Yes"
+label values comorb_Neuro comorb_NeuroLabel
+label define comorb_ImmunosuppressionLabel 0 "No" 1 "Yes"
+label values comorb_Immunosuppression comorb_ImmunosuppressionLabel
+label define diabetesLabel 0 "No" 1 "Yes"
+label values diabetes diabetesLabel
+label define imdLabel 1 "1 - least deprived" 2 "2" 3 "3" 4 "4" 5 "5 - most deprived", replace
+label values imd imdLabel
+label define bmicatLabel 1 "Underweight" 2 "Normal" 3 "Overweight" 4 "Obese I" 5 "Obese II" 6 "Obese III"
+label values bmicat bmicatLabel
+
+
+
+
+save hh_analysis_dataset.dta, replace
+
+
+****************************CREATE VO DATASET FOR TESTNG ONS SERVER********
+cd ${outputData}
+
+clear all
+
+/*
+import delimited "E:\cohorts\households-research\output\input.csv", encoding(ISO-8859-2)
+save input.dta, replace
+*/
+import delimited "E:\cohorts\households-research\analysis\vo_data.csv", varnames(1) encoding(UTF-8) clear
+
 
 
 /*
