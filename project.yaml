@@ -7,7 +7,7 @@ actions:
         cohort: input.csv
 
   prepare_data:
-    run: stata-mp:latest analysis/01_hh_cr_analysis_dataset.do
+    run: stata-mp:latest analysis/01_hhTransmissionModel_cr_analysis_dataset.do
     needs: [generate_cohort]
     outputs:
       highly_sensitive:
