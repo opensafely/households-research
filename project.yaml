@@ -1,0 +1,59 @@
+version: "3.0"
+
+expectations:
+  population_size: 1000000
+
+actions:
+  generate_cohort:
+    run: cohortextractor:latest generate_cohort
+    outputs:
+      highly_sensitive:
+        cohort: output/input.csv
+
+  prepare_data:
+    run: stata-mp:latest analysis/01_hhTransmissionModel_cr_analysis_dataset.do
+    needs: [generate_cohort]
+    outputs:
+      highly_sensitive:
+        allvars: hh_analysis_datasetALLVARS.dta
+        redvars: hh_analysis_datasetREDVARS.dta
+
+  descriptive_notebook:
+    run: jupyter:latest jupyter nbconvert /workspace/analysis/opensafely_eda_test_notebook.ipynb --execute --to html --output-dir=/workspace --ExecutePreprocessor.timeout=86400
+    needs: [prepare_data]
+    outputs:
+      moderately_sensitive:
+        notebook: opensafely_eda_test_notebook.html
+        ages: analysis/ages.png
+        hhsize: analysis/hh_sizes.png
+        cases: analysis/hh_cases_*.png
+
+  vo_test:
+    run: python:latest python analysis/fit_vo.py 20
+    needs: []
+    outputs:
+      moderately_sensitive:
+        vo: vo.txt
+
+  generate_model_data:
+    run: python:latest python analysis/generate_model_data.py
+    needs: [prepare_data]
+    outputs:
+      moderately_sensitive:
+        log: generate_model_data.log
+        timeseries: output/case_series.pickle
+        agecats: output/age_categories_series.pickle
+
+  run_model_with_ridge:
+    run: python:latest python analysis/opensafely_age_hh.py increase_nll
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_with_ridge.log
+
+  run_model_no_ridge:
+    run: python:latest python analysis/opensafely_age_hh.py
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_without_ridge.log
