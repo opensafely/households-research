@@ -246,70 +246,75 @@ logging.info(
     )
 )
 
-mymu = xhat[[0, 2]]
-mySig = covmat[[0, 2], :][:, [0, 2]]
+mymu = xhat[[0,2,3]]
+mySig = covmat[[0,2,3],:][:,[0,2,3]]
 m = 4000
-sarvec = np.zeros(m)
-try:
-    for i in range(0, m):
-        uu = np.random.multivariate_normal(mymu, mySig)
-        sarvec[i] = 100.0 * (1.0 - phi(np.exp(uu[0]), uu[1]))
-except ValueError as e:
-    if str(e) == "array must not contain infs or NaNs":
-        logging.info("Unable to compute baseline SAR, got: {!r}".format(e))
+
+for k in range(2,7):
+    sarvec = np.zeros(m)
+    try:
+        for i in range(0,m):
+            uu = np.random.multivariate_normal(mymu,mySig)
+            eta = (4./np.pi)*np.arctan(uu[2])
+            sarvec[i] = 100.*(1.-phi(np.exp(uu[0])*(k**eta),uu[1]))
+    except ValueError as e:
+        if str(e) == "array must not contain infs or NaNs":
+            logging.info("Unable to compute baseline p({:d}), got: {!r}".format(k,e))
+        else:
+            raise
     else:
-        raise
-else:
-    logging.info(
-        "Baseline SAR is {:.1f} ({:.1f},{:.1f}) %".format(
-            100.0 * (1.0 - phi(np.exp(xhat[0]), xhat[2])),
-            np.percentile(sarvec, 2.5),
-            np.percentile(sarvec, 97.5),
+        eta = (4./np.pi)*np.arctan(xhat[3])
+        logging.info(
+            "p({:d}) is {:.3f} ({:.3f},{:.3f}) %".format(
+            k,
+            100.*(1.-phi(np.exp(xhat[0])*(k**eta),xhat[2])),
+            np.percentile(sarvec,2.5),
+            np.percentile(sarvec,97.5),
+            )
         )
-    )
 
 logging.info(
     "Relative external exposure for <=9yo {:.1f} ({:.1f},{:.1f}) %".format(
-        100.0 * np.exp(xhat[3]),
-        100.0 * np.exp(xhat[3] - 1.96 * stds[3]),
-        100.0 * np.exp(xhat[3] + 1.96 * stds[3]),
-    )
-)
-logging.info(
-    "Relative external exposure for 10-18yo {:.1f} ({:.1f},{:.1f}) %".format(
         100.0 * np.exp(xhat[4]),
         100.0 * np.exp(xhat[4] - 1.96 * stds[4]),
         100.0 * np.exp(xhat[4] + 1.96 * stds[4]),
     )
 )
-
 logging.info(
-    "Relative susceptibility for <=9yo {:.1f} ({:.1f},{:.1f}) %".format(
+    "Relative external exposure for 10-18yo {:.1f} ({:.1f},{:.1f}) %".format(
         100.0 * np.exp(xhat[5]),
         100.0 * np.exp(xhat[5] - 1.96 * stds[5]),
         100.0 * np.exp(xhat[5] + 1.96 * stds[5]),
     )
 )
+
 logging.info(
-    "Relative susceptibility for 10-18yo {:.1f} ({:.1f},{:.1f}) %".format(
+    "Relative susceptibility for <=9yo {:.1f} ({:.1f},{:.1f}) %".format(
         100.0 * np.exp(xhat[6]),
         100.0 * np.exp(xhat[6] - 1.96 * stds[6]),
         100.0 * np.exp(xhat[6] + 1.96 * stds[6]),
     )
 )
-
 logging.info(
-    "Relative transmissibility for <=9yo {:.1f} ({:.1f},{:.1f}) %".format(
+    "Relative susceptibility for 10-18yo {:.1f} ({:.1f},{:.1f}) %".format(
         100.0 * np.exp(xhat[7]),
         100.0 * np.exp(xhat[7] - 1.96 * stds[7]),
         100.0 * np.exp(xhat[7] + 1.96 * stds[7]),
     )
 )
+
 logging.info(
-    "Relative transmissibility for 10-18yo {:.1f} ({:.1f},{:.1f}) %".format(
+    "Relative transmissibility for <=9yo {:.1f} ({:.1f},{:.1f}) %".format(
         100.0 * np.exp(xhat[8]),
         100.0 * np.exp(xhat[8] - 1.96 * stds[8]),
         100.0 * np.exp(xhat[8] + 1.96 * stds[8]),
+    )
+)
+logging.info(
+    "Relative transmissibility for 10-18yo {:.1f} ({:.1f},{:.1f}) %".format(
+        100.0 * np.exp(xhat[9]),
+        100.0 * np.exp(xhat[9] - 1.96 * stds[9]),
+        100.0 * np.exp(xhat[9] + 1.96 * stds[9]),
     )
 )
 
