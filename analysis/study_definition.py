@@ -53,6 +53,24 @@ study = StudyDefinition(
         match_only_underlying_cause=True,
         return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
     ),
+    died_date_ons=patients.died_from_any_cause(
+        on_or_after="2020-02-01",
+        returning="date_of_death",
+        include_month=True,
+        include_day=True,
+        return_expectations={"date": {"earliest" : "2020-02-01"},
+        "rate" : "exponential_increase"},
+    ),
+
+    # cpns
+    died_date_cpns=patients.with_death_recorded_in_cpns(
+        on_or_after="2020-02-01",
+        returning="date_of_death",
+        include_month=True,
+        include_day=True,
+        return_expectations={"date": {"earliest" : "2020-02-01"},
+        "rate" : "exponential_increase"},
+    ),
 
    covid_tpp_probable=patients.with_these_clinical_events(
         combine_codelists(covid_identification_in_primary_care_case_codes_clinical,
