@@ -21,8 +21,8 @@ import sys
 import pickle
 
 
-#increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
-increase_nll = False
+increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
+#increase_nll = False
 if increase_nll:
     logname = "opensafely_age_hh_with_ridge.log"
 else:
@@ -44,7 +44,7 @@ nages = 2
 
 optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
-increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
+#increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
 
 with open("output/case_series.pickle", "rb") as f:
     Y = pickle.load(f)
