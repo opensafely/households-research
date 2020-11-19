@@ -72,7 +72,7 @@ study = StudyDefinition(
         "rate" : "exponential_increase"},
     ),
 
-   covid_tpp_probable=patients.with_these_clinical_events(
+    covid_tpp_probable=patients.with_these_clinical_events(
         combine_codelists(covid_identification_in_primary_care_case_codes_clinical,
                           covid_identification_in_primary_care_case_codes_test,
                           covid_identification_in_primary_care_case_codes_seq),

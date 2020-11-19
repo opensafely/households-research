@@ -18,24 +18,12 @@ sysdir set PERSONAL "/Users/kw/Documents/GitHub/households-research/analysis/ado
 
 							
 ==============================================================================*/
-/*dummy data only
-import delimited /Users/kw/Documents/GitHub/households-research/expectations-kw-testing-dummy-local/generate_cohort/cohort/output/input.csv, clear
-cd /Users/kw/Documents/GitHub/households-research/expectations-kw-testing-dummy-local/generate_cohort/cohort/output
-*/
-
-cd E:\cohorts\households-research\output
-
-clear all
+sysdir set PLUS ./analysis/adofiles
+sysdir set PERSONAL ./analysis/adofiles
+import delimited ./output/input.csv, clear
 
 
-import delimited "E:\cohorts\households-research\output\input.csv", encoding(ISO-8859-2)
-save "E:\cohorts\households-research\output\input.dta", replace
-
-hist age
-
-use input.dta, clear
-
-
+*Both server and local
 * Open a log file
 cap log close
 log using "01_hh_cr_create_analysis_dataset.log", replace t
