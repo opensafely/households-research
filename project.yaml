@@ -1,11 +1,8 @@
 version: "3.0"
 
 expectations:
-<<<<<<< HEAD
-  population_size: 1000
-=======
   population_size: 100000
->>>>>>> kw_testing
+
 
 actions:
   generate_cohort:
@@ -15,20 +12,11 @@ actions:
         cohort: output/input.csv
 
   prepare_data:
-<<<<<<< HEAD
-    run: stata-mp:latest analysis/01_hhTransmissionModel_cr_analysis_dataset.do
-    needs: [generate_cohort]
-    outputs:
-      highly_sensitive:
-        allvars: hh_analysis_datasetALLVARS.dta
-        redvars: hh_analysis_datasetREDVARS.dta
-=======
     run: stata-mp:latest analysis/01_hh_cr_analysis_dataset.do
     needs: [generate_cohort]
     outputs:
       highly_sensitive:
         allvars: hh_analysis_dataset.dta
->>>>>>> kw_testing
 
   descriptive_notebook:
     run: jupyter:latest jupyter nbconvert /workspace/analysis/opensafely_eda_test_notebook.ipynb --execute --to html --output-dir=/workspace --ExecutePreprocessor.timeout=86400
