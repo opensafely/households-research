@@ -1,42 +1,66 @@
--------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
       name:  <unnamed>
-       log:  /Users/kw/Documents/GitHub/households-research/analysis/02_an_data_checks.log
+       log:  E:\cohorts\households-research\analysis\02_an_data_checks.log
   log type:  text
- opened on:  19 Aug 2020, 13:15:29
-
-. 
-. *capture log close
-. *log using "$Logdir/02_an_data_checks", replace t
-. 
-. numlabel, add
-(dataset has no value labels)
+ opened on:  29 Sep 2020, 14:04:33
 
 . 
 end of do-file
 
-. do "/var/folders/g5/db_qw2zn4m14_7r7r2_pfymr0000gn/T//SD01480.000000"
+. do "E:\STATATMP\STD7f28_000000.tmp"
 
-. datacheck _n==1, by(patient_id) nol
-no variables defined
-(error in option by())
-r(111);
+. use hh_analysis_dataset.dta, clear
+file hh_analysis_dataset.dta not found
+r(601);
 
 end of do-file
 
-r(111);
+r(601);
 
-. do "/var/folders/g5/db_qw2zn4m14_7r7r2_pfymr0000gn/T//SD01480.000000"
+. do "E:\STATATMP\STD7f28_000000.tmp"
+
+. use hh_analysis_datasetALLVARS.dta, clear
+file hh_analysis_datasetALLVARS.dta not found
+r(601);
+
+end of do-file
+
+r(601);
+
+. cd
+E:\cohorts\households-research\analysis
+
+. do "E:\STATATMP\STD7f28_000000.tmp"
 
 . cd ${outputData}
-/Users/kw/Documents/draftSTATAoutput/households
+E:\cohorts\households-research\analysis
+
+. 
+end of do-file
+
+. do "E:\STATATMP\STD7f28_000000.tmp"
+
+. cd E:\cohorts\households-research\analysis
+E:\cohorts\households-research\analysis
+
+. 
+. 
+. *set up my global file paths
+. run global.do
+
+. 
+end of do-file
+
+. do "E:\STATATMP\STD7f28_000000.tmp"
+
+. cd ${outputData}
+E:\cohorts\households-research\output
 
 . clear all
 
-. use hh_analysis_dataset_DRAFT.dta, clear
-
 . 
 end of do-file
 
-. do "/var/folders/g5/db_qw2zn4m14_7r7r2_pfymr0000gn/T//SD01480.000000"
+. do "E:\STATATMP\STD7f28_000000.tmp"
 
 . cap log close

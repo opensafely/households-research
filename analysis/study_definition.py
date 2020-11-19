@@ -1,28 +1,32 @@
+# IMPORT STATEMENTS
+# This imports the cohort extractor package. This can be downloaded via pip
 from cohortextractor import (
     StudyDefinition,
     patients,
     codelist_from_csv,
     codelist,
-    filter_codes_by_category,
     combine_codelists,
+    filter_codes_by_category,
+<<<<<<< HEAD
+    combine_codelists,
+=======
+>>>>>>> kw_testing
 )
 
-
-## CODE LISTS
-# All codelist are held within the codelist/ folder and this imports them from
-# codelists.py file which imports from that folder
-
+# IMPORT CODELIST DEFINITIONS FROM CODELIST.PY (WHICH PULLS THEM FROM
+# CODELIST FOLDER
 from codelists import *
 
-## STUDY POPULATION
-# Defines both the study population and points to the important covariates
 
+# STUDY DEFINITION
+# Defines both the study population and points to the important covariates and outcomes
 study = StudyDefinition(
     default_expectations={
         "date": {"earliest": "1970-01-01", "latest": "today"},
         "rate": "uniform",
         "incidence": 0.2,
     },
+<<<<<<< HEAD
     # STUDY POPULATION
     population=patients.registered_with_one_practice_between(
         "2019-02-01", "2020-02-01"
@@ -86,14 +90,55 @@ study = StudyDefinition(
     ),
     # ICU attendance
     icu_date_admitted=patients.admitted_to_icu(
+=======
+
+   # STUDY POPULATION
+    population=patients.registered_with_one_practice_between(
+        "2019-11-01", "2020-02-01"
+    ),
+
+    dereg_date=patients.date_deregistered_from_all_supported_practices(
+        on_or_after="2020-02-01", date_format="YYYY-MM",
+    ),
+
+    # FOLLOW UP
+    has_12_m_follow_up=patients.registered_with_one_practice_between(
+        "2019-02-01", "2020-01-31", ### 12 months prior to 1st Feb 2020
+        return_expectations={
+            "incidence" : 0.95,
+        }
+    ),
+
+    # OUTCOMES
+    died_ons_covid_flag_any=patients.with_these_codes_on_death_certificate(
+        covid_codelist,
         on_or_after="2020-02-01",
+        match_only_underlying_cause=False,
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
+    ),
+    died_ons_covid_flag_underlying=patients.with_these_codes_on_death_certificate(
+        covid_codelist,
+        on_or_after="2020-02-01",
+        match_only_underlying_cause=True,
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
+    ),
+    died_date_ons=patients.died_from_any_cause(
+>>>>>>> kw_testing
+        on_or_after="2020-02-01",
+        returning="date_of_death",
+        include_month=True,
         include_day=True,
+<<<<<<< HEAD
         returning="date_admitted",
         find_first_match_in_period=True,
         return_expectations={
             "date": {"earliest": "2020-02-01"},
             "rate": "exponential_increase",
         },
+=======
+        return_expectations={"date": {"earliest" : "2020-02-01"},
+        "rate" : "exponential_increase"},
+>>>>>>> kw_testing
     ),
     # cpns
     died_date_cpns=patients.with_death_recorded_in_cpns(
@@ -106,6 +151,7 @@ study = StudyDefinition(
             "rate": "exponential_increase",
         },
     ),
+<<<<<<< HEAD
     # ons
     died_ons_covid_flag_any=patients.with_these_codes_on_death_certificate(
         covid_codelist,
@@ -139,32 +185,78 @@ study = StudyDefinition(
         on_or_after="2020-02-01",
         match_only_underlying_cause=True,
         return_expectations={"date": {"earliest": "2020-02-01"}},
-    ),
-    died_date_ons=patients.died_from_any_cause(
-        on_or_after="2020-02-01",
-        returning="date_of_death",
-        include_month=True,
+=======
+
+    covid_tpp_probable=patients.with_these_clinical_events(
+        combine_codelists(covid_identification_in_primary_care_case_codes_clinical,
+                          covid_identification_in_primary_care_case_codes_test,
+                          covid_identification_in_primary_care_case_codes_seq),
+        return_first_date_in_period=True,
         include_day=True,
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
+    ), 
+
+   covid_tpp_probableCLINDIAG=patients.with_these_clinical_events(
+        covid_identification_in_primary_care_case_codes_clinical,
+        return_first_date_in_period=True,
+        include_day=True,
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
+>>>>>>> kw_testing
+    ),
+
+    covid_tpp_probableTEST=patients.with_these_clinical_events(
+        covid_identification_in_primary_care_case_codes_test,
+        return_first_date_in_period=True,
+        include_day=True,
+<<<<<<< HEAD
         return_expectations={
             "date": {"earliest": "2020-02-01"},
             "rate": "exponential_increase",
         },
+=======
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
+>>>>>>> kw_testing
     ),
-    first_tested_for_covid=patients.with_test_result_in_sgss(
-        pathogen="SARS-CoV-2",
-        test_result="any",
+
+    covid_tpp_probableSEQ=patients.with_these_clinical_events(
+        covid_identification_in_primary_care_case_codes_seq,
+        return_first_date_in_period=True,
+        include_day=True,
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
+    ),    
+   
+    covid_admission_date=patients.admitted_to_hospital(
+        returning= "date_admitted" ,  # defaults to "binary_flag"
+        with_these_diagnoses=covid_codelist,  # optional
         on_or_after="2020-02-01",
+<<<<<<< HEAD
         find_first_match_in_period=True,
         returning="date",
         date_format="YYYY-MM-DD",
         return_expectations={
             "date": {"earliest": "2020-02-01"},
             "rate": "exponential_increase",
+=======
+        find_first_match_in_period=True,  
+        date_format="YYYY-MM-DD",  
+        return_expectations={"date": {"earliest": "2020-03-01"}, "incidence" : 0.95},
+   ),
+	covid_admission_primary_diagnosis=patients.admitted_to_hospital(
+        returning="primary_diagnosis",
+        with_these_diagnoses=covid_codelist,  # optional
+        on_or_after="2020-02-01",
+        find_first_match_in_period=True,  
+        date_format="YYYY-MM-DD", 
+        return_expectations={"date": {"earliest": "2020-03-01"},"incidence" : 0.95,
+            "category": {"ratios": {"U071":0.5, "U072":0.5}},
+>>>>>>> kw_testing
         },
     ),
-    first_positive_test_date=patients.with_test_result_in_sgss(
+
+   positive_covid_test_ever=patients.with_test_result_in_sgss(
         pathogen="SARS-CoV-2",
         test_result="positive",
+<<<<<<< HEAD
         on_or_after="2020-02-01",
         find_first_match_in_period=True,
         returning="date",
@@ -173,6 +265,9 @@ study = StudyDefinition(
             "date": {"earliest": "2020-02-01"},
             "rate": "exponential_increase",
         },
+=======
+        return_expectations={"incidence": 0.1},
+>>>>>>> kw_testing
     ),
     ## DEMOGRAPHIC COVARIATES
     # AGE
@@ -200,6 +295,7 @@ study = StudyDefinition(
             "category": {"ratios": {"100": 0.1, "200": 0.2, "300": 0.7}},
         },
     ),
+<<<<<<< HEAD
     # RURAL OR URBAN LOCATION
     rural_urban=patients.address_as_of(
         "2020-02-01",
@@ -209,6 +305,9 @@ study = StudyDefinition(
             "category": {"ratios": {"rural": 0.1, "urban": 0.9}},
         },
     ),
+=======
+
+>>>>>>> kw_testing
     # GEOGRAPHIC REGION CALLED STP
     stp=patients.registered_practice_as_of(
         "2020-02-01",
@@ -231,6 +330,7 @@ study = StudyDefinition(
             },
         },
     ),
+<<<<<<< HEAD
     # OTHER REGION
     region=patients.registered_practice_as_of(
         "2020-02-01",
@@ -281,6 +381,9 @@ study = StudyDefinition(
             "incidence": 0.75,
         },
     ),
+=======
+
+>>>>>>> kw_testing
     # ETHNICITY IN 6 CATEGORIES
     ethnicity=patients.with_these_clinical_events(
         ethnicity_codes,
@@ -288,6 +391,7 @@ study = StudyDefinition(
         find_last_match_in_period=True,
         include_date_of_match=True,
         return_expectations={
+<<<<<<< HEAD
             "category": {"ratios": {"1": 0.2, "2": 0.2, "3": 0.2, "4": 0.2, "5": 0.2}},
             "incidence": 0.75,
         },
@@ -316,6 +420,17 @@ study = StudyDefinition(
         },
     ),
     hh_id=patients.household_as_of(
+=======
+            "category": {"ratios": {"1": 0.8, "5": 0.1, "3": 0.1}},
+            "incidence": 0.9,
+        },
+    ),
+
+
+
+    # HOUSEHOLD INFORMATION
+    household_id=patients.household_as_of(
+>>>>>>> kw_testing
         "2020-02-01",
         returning="pseudo_id",
         return_expectations={
@@ -323,12 +438,18 @@ study = StudyDefinition(
             "incidence": 1,
         },
     ),
+<<<<<<< HEAD
     hh_size=patients.household_as_of(
+=======
+
+    household_size=patients.household_as_of(
+>>>>>>> kw_testing
         "2020-02-01",
         returning="household_size",
         return_expectations={
-            "int": {"distribution": "normal", "mean": 8, "stddev": 1},
+            "int": {"distribution": "normal", "mean": 3, "stddev": 1},
             "incidence": 1,
+<<<<<<< HEAD
         },
     ),
     ### GP CONSULTATION RATE IN 12 MONTH BEFORE FEB 1 2020
@@ -484,8 +605,28 @@ study = StudyDefinition(
                 prednisolone_last_year > 0 AND
                 prednisolone_last_year < 5
 
-            """,
+=======
         },
+    ),
+
+        care_home_type=patients.care_home_status_as_of(
+        "2020-02-01",
+        categorised_as={
+            "PC": """
+              IsPotentialCareHome
+              AND LocationDoesNotRequireNursing='Y'
+              AND LocationRequiresNursing='N'
+            """,
+            "PN": """
+              IsPotentialCareHome
+              AND LocationDoesNotRequireNursing='N'
+              AND LocationRequiresNursing='Y'
+>>>>>>> kw_testing
+            """,
+            "PS": "IsPotentialCareHome",
+            "U": "DEFAULT",
+        },
+<<<<<<< HEAD
         return_expectations={"category": {"ratios": {"0": 0.8, "1": 0.1, "2": 0.1}},},
         recent_asthma_code=patients.with_these_clinical_events(
             asthma_codes, between=["2017-02-01", "2020-01-31"],
@@ -804,9 +945,16 @@ study = StudyDefinition(
         between=["2019-02-01", "2020-01-31"],
         return_last_date_in_period=True,
         include_month=True,
+=======
+>>>>>>> kw_testing
         return_expectations={
-            "date": {"earliest": "2019-02-01", "latest": "2020-01-31"}
+            "rate": "universal",
+            "category": {"ratios": {"PC": 0.01, "PN": 0.01, "PS": 0.01, "U": 0.97,},},
         },
     ),
+<<<<<<< HEAD
 )
 
+=======
+)
+>>>>>>> kw_testing
