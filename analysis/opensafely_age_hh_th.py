@@ -201,7 +201,7 @@ if not fout.success:
 
 
 pn = len(x0)
-delta = 1e-2  # This finite difference needs some unavoidable tuning by hand
+delta = 1e-3  # This finite difference needs some unavoidable tuning by hand
 dx = delta * xhat
 ej = np.zeros(pn)
 ek = np.zeros(pn)
@@ -239,7 +239,7 @@ logging.info("One optimisation run")
 
 
 logging.info(
-    "Baseline probability of infection from outside is {:.1f} ({:.1f},{:.1f}) %".format(
+    "Baseline probability of infection from outside is {:.5f} ({:.5f},{:.5f}) %".format(
         100.0 * (1.0 - np.exp(-np.exp(xhat[1]))),
         100.0 * (1.0 - np.exp(-np.exp(xhat[1] - 1.96 * stds[1]))),
         100.0 * (1.0 - np.exp(-np.exp(xhat[1] + 1.96 * stds[1]))),
@@ -265,7 +265,7 @@ for k in range(2,7):
     else:
         eta = (4./np.pi)*np.arctan(xhat[3])
         logging.info(
-            "p({:d}) is {:.3f} ({:.3f},{:.3f}) %".format(
+            "p({:d}) is {:.5f} ({:.5f},{:.5f}) %".format(
             k,
             100.*(1.-phi(np.exp(xhat[0])*(k**eta),xhat[2])),
             np.percentile(sarvec,2.5),
@@ -274,14 +274,14 @@ for k in range(2,7):
         )
 
 logging.info(
-    "Relative external exposure for <=9yo {:.1f} ({:.1f},{:.1f}) %".format(
+    "Relative external exposure for <=9yo {:.5f} ({:.5f},{:.5f}) %".format(
         100.0 * np.exp(xhat[4]),
         100.0 * np.exp(xhat[4] - 1.96 * stds[4]),
         100.0 * np.exp(xhat[4] + 1.96 * stds[4]),
     )
 )
 logging.info(
-    "Relative external exposure for 10-18yo {:.1f} ({:.1f},{:.1f}) %".format(
+    "Relative external exposure for 10-18yo {:.5f} ({:.5f},{:.5f}) %".format(
         100.0 * np.exp(xhat[5]),
         100.0 * np.exp(xhat[5] - 1.96 * stds[5]),
         100.0 * np.exp(xhat[5] + 1.96 * stds[5]),
@@ -289,14 +289,14 @@ logging.info(
 )
 
 logging.info(
-    "Relative susceptibility for <=9yo {:.1f} ({:.1f},{:.1f}) %".format(
+    "Relative susceptibility for <=9yo {:.5f} ({:.5f},{:.5f}) %".format(
         100.0 * np.exp(xhat[6]),
         100.0 * np.exp(xhat[6] - 1.96 * stds[6]),
         100.0 * np.exp(xhat[6] + 1.96 * stds[6]),
     )
 )
 logging.info(
-    "Relative susceptibility for 10-18yo {:.1f} ({:.1f},{:.1f}) %".format(
+    "Relative susceptibility for 10-18yo {:.5f} ({:.5f},{:.5f}) %".format(
         100.0 * np.exp(xhat[7]),
         100.0 * np.exp(xhat[7] - 1.96 * stds[7]),
         100.0 * np.exp(xhat[7] + 1.96 * stds[7]),
@@ -304,14 +304,14 @@ logging.info(
 )
 
 logging.info(
-    "Relative transmissibility for <=9yo {:.1f} ({:.1f},{:.1f}) %".format(
+    "Relative transmissibility for <=9yo {:.5f} ({:.5f},{:.5f}) %".format(
         100.0 * np.exp(xhat[8]),
         100.0 * np.exp(xhat[8] - 1.96 * stds[8]),
         100.0 * np.exp(xhat[8] + 1.96 * stds[8]),
     )
 )
 logging.info(
-    "Relative transmissibility for 10-18yo {:.1f} ({:.1f},{:.1f}) %".format(
+    "Relative transmissibility for 10-18yo {:.5f} ({:.5f},{:.5f}) %".format(
         100.0 * np.exp(xhat[9]),
         100.0 * np.exp(xhat[9] - 1.96 * stds[9]),
         100.0 * np.exp(xhat[9] + 1.96 * stds[9]),
