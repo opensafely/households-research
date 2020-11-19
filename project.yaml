@@ -52,7 +52,7 @@ actions:
         log: opensafely_age_hh_with_ridge.log
 
   run_model_no_ridge:
-    run: python:latest python analysis/opensafely_age_hh.py
+    run: python:latest python analysis/opensafely_age_hh_th.py
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
