@@ -31,7 +31,7 @@ logging.info("Libraries imported and logging started")
 def get_df():
     if "test_data" not in sys.argv:
         df = pd.read_stata(
-            "hh_analysis_datasetALLVARS.dta", columns=["hh_id", "age", "case"]
+            "hh_analysis_dataset.dta", columns=["hh_id", "age", "case"]
         )
     else:
         # test data
