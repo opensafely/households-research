@@ -128,14 +128,23 @@ def mynll(x, Y, XX):
                     for omd in range(0, jd + 1):
                         om = decimal_to_bit_array(omd, m)
                         if np.all(om <= j):
+                            # devide by zero encountered in double_scalars
+                            # overflow encountered in double_scalars
+                            my_phi = phi((1 - j) @ laM, logtheta)
+
+                            if np.any(
+                                np.floor(np.log10(np.abs(my_phi[my_phi != 0]))) < -100
+                            ):
+                                return 0
+
                             BB[jd, omd] = 1.0 / np.prod(
-                                (phi((1 - j) @ laM, logtheta) ** om) * (Bk ** (1 - j))
+                                (my_phi ** om) * (Bk ** (1 - j))
                             )
+
                 nlv[i] = -np.log(LA.solve(BB, np.ones(r))[-1])
         nll = np.sum(nlv)
         if increase_nll:
             nll += 7.4 * np.sum(x ** 2)  # Comment out this Ridge if not needed
-
         return nll
     else:
         nll = np.inf
