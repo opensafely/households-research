@@ -167,6 +167,9 @@ label values imd imd
 
 /*  Age variables  */ 
 
+*sort out age -1 (babies born during study period)
+replace age=0 if age==-1
+
 * Create categorised age 
 recode age 	0/17.9999=0 ///
 			18/29.9999 = 1 /// 
