@@ -238,7 +238,13 @@ Hinv += np.triu(Hinv.T, 1)
 Hinv = Hinv / (
     4.0 * np.outer(dx, dx) + np.diag(8.0 * dx ** 2)
 )  # TO DO: replace with a chol ...
-covmat = LA.inv(0.5 * (Hinv + Hinv.T))
+try:
+    covmat = LA.inv(0.5 * (Hinv + Hinv.T))
+except np.linalg.LinAlgError:
+    logging.warn("Matrix is singular or ill-conditioned. Exiting. %s", Hinv + Hinv.T)
+    import sys
+
+    sys.exit(0)
 stds = np.sqrt(np.diag(covmat))
 
 
