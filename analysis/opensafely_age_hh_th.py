@@ -135,7 +135,7 @@ def mynll(x, Y, XX):
                             if np.any(
                                 np.floor(np.log10(np.abs(my_phi[my_phi != 0]))) < -100
                             ):
-                                return 0
+                                return 10 ** 6
 
                             BB[jd, omd] = 1.0 / np.prod(
                                 (my_phi ** om) * (Bk ** (1 - j))
