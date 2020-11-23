@@ -135,12 +135,13 @@ def mynll(x, Y, XX):
                             if np.any(
                                 np.floor(np.log10(np.abs(my_phi[my_phi != 0]))) < -100
                             ):
-                                return 10 ** 6
+                                return np.inf
 
                             BB[jd, omd] = 1.0 / np.prod(
                                 (my_phi ** om) * (Bk ** (1 - j))
                             )
-
+                if np.any(np.isnan(BB)) or np.any(np.isinf(BB)):
+                    return np.inf
                 nlv[i] = -np.log(LA.solve(BB, np.ones(r))[-1])
         nll = np.sum(nlv)
         if increase_nll:
