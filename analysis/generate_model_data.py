@@ -30,21 +30,24 @@ logging.info("Libraries imported and logging started")
 
 def get_df():
     if "test_data" not in sys.argv:
-        df = pd.read_stata(
-            "hh_analysis_dataset.dta", columns=["hh_id", "age", "case"]
-        )
+        df = pd.read_stata("hh_analysis_dataset.dta", columns=["hh_id", "age", "case"])
     else:
         # test data
         np.random.seed(42)
-        patient_count = 1000
+        patient_count = 10000
         df = pd.DataFrame()
         age_list = range(0, 100)
-        case_list = [0] * 10000 + [1]
-        hh_id_list = range(0, int(patient_count / 3))
+        case_list = [0] * 100 + [1]
+        hh_id_list = range(0, int(patient_count * 0.95))
 
         df["hh_id"] = np.random.choice(hh_id_list, size=patient_count)
         df["age"] = np.random.choice(age_list, size=patient_count)
         df["case"] = np.random.choice(case_list, size=patient_count)
+        # Remove big households because they slow tests down
+        counts = df.groupby("hh_id").count()["age"].to_frame()
+        counts = counts[counts["age"] <= 8]
+        df = df.loc[df.hh_id.isin(counts.index), :]
+
     logging.info("Data Read In")
     return df
 
