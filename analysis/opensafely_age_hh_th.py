@@ -38,9 +38,6 @@ logging.basicConfig(
 logging.info("Libraries imported and logging started")
 
 
-# This is the number of age classes; here we will follow Roz's interests and consider two young ages
-
-nages = 2
 
 optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
@@ -82,15 +79,16 @@ def decimal_to_bit_array(d, n_digits):
 
 @numba.jit(nopython=True)
 def mynll(x, Y, XX):
-
+    # This is the number of age classes; here we will follow Roz's interests and consider two young ages
+    nages = 2
     if True:  # Ideally catch the linear algebra fail directly
         llaL = x[0]
         llaG = x[1]
         logtheta = x[2]
-        eta = (4./np.pi)*np.arctan(x[3])
-        alpha = x[4:(4+na)]
-        beta = x[(4+na):(4+2*na)]
-        gamma = x[(4+2*na):]
+        eta = (4.0 / np.pi) * np.arctan(x[3])
+        alpha = x[4 : (4 + nages)]
+        beta = x[(4 + nages) : (4 + 2 * nages)]
+        gamma = x[(4 + 2 * nages) :]
 
         nlv = np.zeros(hhnums)  # Vector of negative log likelihoods
         for i in range(0, hhnums):
