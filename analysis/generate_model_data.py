@@ -52,8 +52,12 @@ def get_df():
 def get_storage_lists(df):
     age_bins = [-1, 9, 18, 200]
     age_bitmasks = [2, 1, 0]
+    # The following is a hack around us getting impossible ages
+    df = df[df.age >= 0]
     df["age_labels"] = pd.cut(df["age"], bins=age_bins, labels=age_bitmasks, right=True)
-
+    # As a result of the age >=0 hack, we expect the following assertion always
+    # to pass
+    assert ~np.any(np.isnan(list(df.age_labels.values))), "Unbinnable age found!"
     grouped = df.groupby("hh_id")
     cases = grouped["case"].apply(np.array)
     age_categories = grouped["age_labels"].apply(np.array)
