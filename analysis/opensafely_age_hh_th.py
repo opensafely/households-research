@@ -38,9 +38,6 @@ logging.basicConfig(
 logging.info("Libraries imported and logging started")
 
 
-# This is the number of age classes; here we will follow Roz's interests and consider two young ages
-
-nages = 2
 
 optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
@@ -82,15 +79,16 @@ def decimal_to_bit_array(d, n_digits):
 
 @numba.jit(nopython=True)
 def mynll(x, Y, XX):
-
+    # This is the number of age classes; here we will follow Roz's interests and consider two young ages
+    nages = 2
     if True:  # Ideally catch the linear algebra fail directly
         llaL = x[0]
         llaG = x[1]
         logtheta = x[2]
-        eta = (4./np.pi)*np.arctan(x[3])
-        alpha = x[4:(4+na)]
-        beta = x[(4+na):(4+2*na)]
-        gamma = x[(4+2*na):]
+        eta = (4.0 / np.pi) * np.arctan(x[3])
+        alpha = x[4 : (4 + nages)]
+        beta = x[(4 + nages) : (4 + 2 * nages)]
+        gamma = x[(4 + 2 * nages) :]
 
         nlv = np.zeros(hhnums)  # Vector of negative log likelihoods
         for i in range(0, hhnums):
@@ -130,14 +128,24 @@ def mynll(x, Y, XX):
                     for omd in range(0, jd + 1):
                         om = decimal_to_bit_array(omd, m)
                         if np.all(om <= j):
+                            # devide by zero encountered in double_scalars
+                            # overflow encountered in double_scalars
+                            my_phi = phi((1 - j) @ laM, logtheta)
+
+                            if np.any(
+                                np.floor(np.log10(np.abs(my_phi[my_phi != 0]))) < -100
+                            ):
+                                return np.inf
+
                             BB[jd, omd] = 1.0 / np.prod(
-                                (phi((1 - j) @ laM, logtheta) ** om) * (Bk ** (1 - j))
+                                (my_phi ** om) * (Bk ** (1 - j))
                             )
+                if np.any(np.isnan(BB)) or np.any(np.isinf(BB)):
+                    return np.inf
                 nlv[i] = -np.log(LA.solve(BB, np.ones(r))[-1])
         nll = np.sum(nlv)
         if increase_nll:
             nll += 7.4 * np.sum(x ** 2)  # Comment out this Ridge if not needed
-
         return nll
     else:
         nll = np.inf
@@ -231,7 +239,13 @@ Hinv += np.triu(Hinv.T, 1)
 Hinv = Hinv / (
     4.0 * np.outer(dx, dx) + np.diag(8.0 * dx ** 2)
 )  # TO DO: replace with a chol ...
-covmat = LA.inv(0.5 * (Hinv + Hinv.T))
+try:
+    covmat = LA.inv(0.5 * (Hinv + Hinv.T))
+except np.linalg.LinAlgError:
+    logging.warn("Matrix is singular or ill-conditioned. Exiting. %s", Hinv + Hinv.T)
+    import sys
+
+    sys.exit(0)
 stds = np.sqrt(np.diag(covmat))
 
 

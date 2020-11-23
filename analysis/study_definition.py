@@ -263,7 +263,7 @@ study = StudyDefinition(
         "2020-02-01",
         returning="pseudo_id",
         return_expectations={
-            "int": {"distribution": "normal", "mean": 1000, "stddev": 200},
+            "int": {"distribution": "normal", "mean": 500, "stddev": 500},
             "incidence": 1,
         },
     ),
