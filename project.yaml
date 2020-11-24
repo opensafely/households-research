@@ -1,8 +1,7 @@
 version: "3.0"
 
 expectations:
-  population_size: 100000
-
+  population_size: 1000
 
 actions:
   generate_cohort:
@@ -45,7 +44,7 @@ actions:
         agecats: output/age_categories_series.pickle
 
   run_model_with_ridge:
-    run: python:latest python analysis/opensafely_age_hh.py increase_nll
+    run: python:latest python analysis/opensafely_age_hh_th.py --add-ridge
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
@@ -57,3 +56,34 @@ actions:
     outputs:
       moderately_sensitive:
         log: opensafely_age_hh_without_ridge.log
+
+  run_model_with_ridge_and_param_1:
+    run: python:latest python analysis/opensafely_age_hh_th.py --add-ridge --starting-parameter=1
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_with_ridge_and_param_1.log
+
+  run_model_no_ridge_and_param_1:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter=1
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_without_ridge_and_param_1.log
+
+  run_all:
+    needs:
+      [
+        run_model_no_ridge,
+        run_model_with_ridge,
+        run_model_no_ridge_and_param_1,
+        run_model_with_ridge_and_param_1,
+      ]
+    # In order to be valid this action needs to define a run commmand and some
+    # output. We don't really care what these are but the below does the trick.
+    # In a future release of the platform, this special action won't need to be
+    # defined at all.
+    run: cohortextractor:latest --version
+    outputs:
+      moderately_sensitive:
+        whatever: project.yaml

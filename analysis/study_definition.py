@@ -23,36 +23,34 @@ study = StudyDefinition(
         "rate": "uniform",
         "incidence": 0.2,
     },
-
-   # STUDY POPULATION
+    # STUDY POPULATION
     population=patients.registered_with_one_practice_between(
         "2019-11-01", "2020-02-01"
     ),
-
     dereg_date=patients.date_deregistered_from_all_supported_practices(
-        on_or_after="2020-02-01", date_format="YYYY-MM",
+        on_or_after="2020-02-01",
+        date_format="YYYY-MM",
     ),
-
     # FOLLOW UP
     has_12_m_follow_up=patients.registered_with_one_practice_between(
-        "2019-02-01", "2020-01-31", ### 12 months prior to 1st Feb 2020
+        "2019-02-01",
+        "2020-01-31",  ### 12 months prior to 1st Feb 2020
         return_expectations={
-            "incidence" : 0.95,
-        }
+            "incidence": 0.95,
+        },
     ),
-
     # OUTCOMES
     died_ons_covid_flag_any=patients.with_these_codes_on_death_certificate(
         covid_codelist,
         on_or_after="2020-02-01",
         match_only_underlying_cause=False,
-        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence": 0.6},
     ),
     died_ons_covid_flag_underlying=patients.with_these_codes_on_death_certificate(
         covid_codelist,
         on_or_after="2020-02-01",
         match_only_underlying_cause=True,
-        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence": 0.6},
     ),
     died_date_ons=patients.died_from_any_cause(
         on_or_after="2020-02-01",
@@ -75,57 +73,55 @@ study = StudyDefinition(
             "rate": "exponential_increase",
         },
     ),
-
     # covid primary care cases
     covid_tpp_probable=patients.with_these_clinical_events(
-        combine_codelists(covid_identification_in_primary_care_case_codes_clinical,
-                          covid_identification_in_primary_care_case_codes_test,
-                          covid_identification_in_primary_care_case_codes_seq),
+        combine_codelists(
+            covid_identification_in_primary_care_case_codes_clinical,
+            covid_identification_in_primary_care_case_codes_test,
+            covid_identification_in_primary_care_case_codes_seq,
+        ),
         return_first_date_in_period=True,
         include_day=True,
-        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
-    ), 
-
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence": 0.6},
+    ),
     covid_tpp_probableCLINDIAG=patients.with_these_clinical_events(
         covid_identification_in_primary_care_case_codes_clinical,
         return_first_date_in_period=True,
         include_day=True,
-        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence": 0.6},
     ),
-
     covid_tpp_probableTEST=patients.with_these_clinical_events(
         covid_identification_in_primary_care_case_codes_test,
         return_first_date_in_period=True,
         include_day=True,
-        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence": 0.6},
     ),
-
     covid_tpp_probableSEQ=patients.with_these_clinical_events(
         covid_identification_in_primary_care_case_codes_seq,
         return_first_date_in_period=True,
         include_day=True,
-        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence" : 0.6},
-    ),    
-   
+        return_expectations={"date": {"earliest": "2020-02-01"}, "incidence": 0.6},
+    ),
     covid_admission_date=patients.admitted_to_hospital(
-        returning= "date_admitted" ,  # defaults to "binary_flag"
+        returning="date_admitted",  # defaults to "binary_flag"
         with_these_diagnoses=covid_codelist,  # optional
         on_or_after="2020-02-01",
-        find_first_match_in_period=True,  
-        date_format="YYYY-MM-DD",  
-        return_expectations={"date": {"earliest": "2020-03-01"}, "incidence" : 0.95},
-   ),
-	covid_admission_primary_diagnosis=patients.admitted_to_hospital(
+        find_first_match_in_period=True,
+        date_format="YYYY-MM-DD",
+        return_expectations={"date": {"earliest": "2020-03-01"}, "incidence": 0.95},
+    ),
+    covid_admission_primary_diagnosis=patients.admitted_to_hospital(
         returning="primary_diagnosis",
         with_these_diagnoses=covid_codelist,  # optional
         on_or_after="2020-02-01",
-        find_first_match_in_period=True,  
-        date_format="YYYY-MM-DD", 
-        return_expectations={"date": {"earliest": "2020-03-01"},"incidence" : 0.95,
-            "category": {"ratios": {"U071":0.5, "U072":0.5}},
+        find_first_match_in_period=True,
+        date_format="YYYY-MM-DD",
+        return_expectations={
+            "date": {"earliest": "2020-03-01"},
+            "incidence": 0.95,
+            "category": {"ratios": {"U071": 0.5, "U072": 0.5}},
         },
     ),
-
     positive_covid_test_ever=patients.with_test_result_in_sgss(
         pathogen="SARS-CoV-2",
         test_result="positive",
@@ -138,7 +134,6 @@ study = StudyDefinition(
             "rate": "exponential_increase",
         },
     ),
-   
     ## DEMOGRAPHIC COVARIATES
     # AGE
     age=patients.age_as_of(
@@ -165,7 +160,6 @@ study = StudyDefinition(
             "category": {"ratios": {"100": 0.1, "200": 0.2, "300": 0.7}},
         },
     ),
-
     # RURAL OR URBAN LOCATION
     rural_urban=patients.address_as_of(
         "2020-02-01",
@@ -175,9 +169,6 @@ study = StudyDefinition(
             "category": {"ratios": {"rural": 0.1, "urban": 0.9}},
         },
     ),
-
-
-
     # GEOGRAPHIC REGION CALLED STP
     stp=patients.registered_practice_as_of(
         "2020-02-01",
@@ -200,7 +191,6 @@ study = StudyDefinition(
             },
         },
     ),
-
     # OTHER REGION
     region=patients.registered_practice_as_of(
         "2020-02-01",
@@ -221,7 +211,6 @@ study = StudyDefinition(
             },
         },
     ),
-
     # ETHNICITY IN 6 CATEGORIES
     ethnicity=patients.with_these_clinical_events(
         ethnicity_codes,
@@ -253,21 +242,25 @@ study = StudyDefinition(
         },
         return_expectations={
             "rate": "universal",
-            "category": {"ratios": {"PC": 0.05, "PN": 0.05, "PS": 0.05, "U": 0.85,},},
+            "category": {
+                "ratios": {
+                    "PC": 0.05,
+                    "PN": 0.05,
+                    "PS": 0.05,
+                    "U": 0.85,
+                },
+            },
         },
     ),
-
-
     # HOUSEHOLD INFORMATION
     household_id=patients.household_as_of(
         "2020-02-01",
         returning="pseudo_id",
         return_expectations={
-            "int": {"distribution": "normal", "mean": 1000, "stddev": 200},
+            "int": {"distribution": "normal", "mean": 500, "stddev": 500},
             "incidence": 1,
         },
     ),
-
     household_size=patients.household_as_of(
         "2020-02-01",
         returning="household_size",

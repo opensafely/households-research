@@ -136,7 +136,17 @@ def decimal_to_bit_array(d, n_digits):
     return ((d & powers_of_two) / powers_of_two)[-n_digits:]
 
 
-x = np.array([-3.0, -2.0, 0.1, 0.2, 0.3, 0.4, 0.5,])
+x = np.array(
+    [
+        -3.0,
+        -2.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+    ]
+)
 
 
 @numba.jit(nopython=True, cache=True)
@@ -252,7 +262,17 @@ def mynll(x, Y, XX):
         return nll
 
 
-x0 = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,])
+x0 = np.array(
+    [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+)
 mynll(x0, Y, XX)
 
 
@@ -426,4 +446,3 @@ print(
         100.0 * np.exp(xhat[6] + 1.96 * stds[6]),
     )
 )
-

@@ -15,18 +15,45 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import logging
 import numba
+import argparse
 import pathlib
 import os
 import sys
 import pickle
 
+optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
-increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
-#increase_nll = False
-if increase_nll:
-    logname = "opensafely_age_hh_with_ridge.log"
+# Starting parameters - and check that the target function evaluates OK at them
+x0_candidates = [
+    np.array([-2.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,]),
+    np.array([-1.5, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,]),
+]
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--add-ridge", action="store_true")
+parser.add_argument("--starting-parameter", type=int, choices=range(len(x0_candidates)))
+args = parser.parse_args()
+
+if args.add_ridge:
+    if args.starting_parameter:
+        logname = (
+            f"opensafely_age_hh_with_ridge_and_param_{args.starting_parameter}.log"
+        )
+    else:
+        logname = "opensafely_age_hh_with_ridge.log"
 else:
-    logname = "opensafely_age_hh_without_ridge.log"
+    if args.starting_parameter:
+        logname = (
+            f"opensafely_age_hh_without_ridge_and_param_{args.starting_parameter}.log"
+        )
+    else:
+        logname = "opensafely_age_hh_without_ridge.log"
+add_ridge = bool(args.add_ridge)  # To keep numba JIT happy
+if args.starting_parameter:
+    x0 = x0_candidates[args.starting_parameter]
+else:
+    x0 = x0_candidates[0]
+
 homedir = pathlib.Path(__file__).resolve().parent.parent
 
 logging.basicConfig(
@@ -37,14 +64,7 @@ logging.basicConfig(
 )
 logging.info("Libraries imported and logging started")
 
-
-# This is the number of age classes; here we will follow Roz's interests and consider two young ages
-
-nages = 2
-
-optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
-
-#increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
+logging.info("Starting parameters: %s", x0)
 
 with open("output/case_series.pickle", "rb") as f:
     Y = pickle.load(f)
@@ -82,15 +102,16 @@ def decimal_to_bit_array(d, n_digits):
 
 @numba.jit(nopython=True)
 def mynll(x, Y, XX):
-
+    # This is the number of age classes; here we will follow Roz's interests and consider two young ages
+    nages = 2
     if True:  # Ideally catch the linear algebra fail directly
         llaL = x[0]
         llaG = x[1]
         logtheta = x[2]
-        eta = (4./np.pi)*np.arctan(x[3])
-        alpha = x[4:(4+na)]
-        beta = x[(4+na):(4+2*na)]
-        gamma = x[(4+2*na):]
+        eta = (4.0 / np.pi) * np.arctan(x[3])
+        alpha = x[4 : (4 + nages)]
+        beta = x[(4 + nages) : (4 + 2 * nages)]
+        gamma = x[(4 + 2 * nages) :]
 
         nlv = np.zeros(hhnums)  # Vector of negative log likelihoods
         for i in range(0, hhnums):
@@ -120,9 +141,11 @@ def mynll(x, Y, XX):
 
                 # Quantities that don't vary through the sum
                 Bk = np.exp(-np.exp(llaG) * np.exp(alpha @ (X.T)))
-                laM = np.exp(llaL) * np.outer(
-                    np.exp(beta @ (X.T)), np.exp(gamma @ (X.T))
-                ) * (m**eta)
+                laM = (
+                    np.exp(llaL)
+                    * np.outer(np.exp(beta @ (X.T)), np.exp(gamma @ (X.T)))
+                    * (m ** eta)
+                )
 
                 BB = np.zeros((r, r))  # To be the Ball matrix
                 for jd in range(0, r):
@@ -130,14 +153,24 @@ def mynll(x, Y, XX):
                     for omd in range(0, jd + 1):
                         om = decimal_to_bit_array(omd, m)
                         if np.all(om <= j):
+                            # devide by zero encountered in double_scalars
+                            # overflow encountered in double_scalars
+                            my_phi = phi((1 - j) @ laM, logtheta)
+
+                            if np.any(
+                                np.floor(np.log10(np.abs(my_phi[my_phi != 0]))) < -100
+                            ):
+                                return np.inf
+
                             BB[jd, omd] = 1.0 / np.prod(
-                                (phi((1 - j) @ laM, logtheta) ** om) * (Bk ** (1 - j))
+                                (my_phi ** om) * (Bk ** (1 - j))
                             )
+                if np.any(np.isnan(BB)) or np.any(np.isinf(BB)):
+                    return np.inf
                 nlv[i] = -np.log(LA.solve(BB, np.ones(r))[-1])
         nll = np.sum(nlv)
-        if increase_nll:
+        if add_ridge:
             nll += 7.4 * np.sum(x ** 2)  # Comment out this Ridge if not needed
-
         return nll
     else:
         nll = np.inf
@@ -153,9 +186,6 @@ logging.info("Helper functions defined")
 #
 
 
-# Starting parameters - and check that the target function evaluates OK at them
-
-x0 = np.array([-2.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,])
 mynll(x0, Y, XX)
 
 
@@ -231,7 +261,13 @@ Hinv += np.triu(Hinv.T, 1)
 Hinv = Hinv / (
     4.0 * np.outer(dx, dx) + np.diag(8.0 * dx ** 2)
 )  # TO DO: replace with a chol ...
-covmat = LA.inv(0.5 * (Hinv + Hinv.T))
+try:
+    covmat = LA.inv(0.5 * (Hinv + Hinv.T))
+except np.linalg.LinAlgError:
+    logging.warn("Matrix is singular or ill-conditioned. Exiting. %s", Hinv + Hinv.T)
+    import sys
+
+    sys.exit(0)
 stds = np.sqrt(np.diag(covmat))
 
 
@@ -246,30 +282,30 @@ logging.info(
     )
 )
 
-mymu = xhat[[0,2,3]]
-mySig = covmat[[0,2,3],:][:,[0,2,3]]
+mymu = xhat[[0, 2, 3]]
+mySig = covmat[[0, 2, 3], :][:, [0, 2, 3]]
 m = 4000
 
-for k in range(2,7):
+for k in range(2, 7):
     sarvec = np.zeros(m)
     try:
-        for i in range(0,m):
-            uu = np.random.multivariate_normal(mymu,mySig)
-            eta = (4./np.pi)*np.arctan(uu[2])
-            sarvec[i] = 100.*(1.-phi(np.exp(uu[0])*(k**eta),uu[1]))
+        for i in range(0, m):
+            uu = np.random.multivariate_normal(mymu, mySig)
+            eta = (4.0 / np.pi) * np.arctan(uu[2])
+            sarvec[i] = 100.0 * (1.0 - phi(np.exp(uu[0]) * (k ** eta), uu[1]))
     except ValueError as e:
         if str(e) == "array must not contain infs or NaNs":
-            logging.info("Unable to compute baseline p({:d}), got: {!r}".format(k,e))
+            logging.info("Unable to compute baseline p({:d}), got: {!r}".format(k, e))
         else:
             raise
     else:
-        eta = (4./np.pi)*np.arctan(xhat[3])
+        eta = (4.0 / np.pi) * np.arctan(xhat[3])
         logging.info(
             "p({:d}) is {:.5f} ({:.5f},{:.5f}) %".format(
-            k,
-            100.*(1.-phi(np.exp(xhat[0])*(k**eta),xhat[2])),
-            np.percentile(sarvec,2.5),
-            np.percentile(sarvec,97.5),
+                k,
+                100.0 * (1.0 - phi(np.exp(xhat[0]) * (k ** eta), xhat[2])),
+                np.percentile(sarvec, 2.5),
+                np.percentile(sarvec, 97.5),
             )
         )
 
@@ -317,4 +353,3 @@ logging.info(
         100.0 * np.exp(xhat[9] + 1.96 * stds[9]),
     )
 )
-
