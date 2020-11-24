@@ -15,18 +15,45 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import logging
 import numba
+import argparse
 import pathlib
 import os
 import sys
 import pickle
 
+optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
-increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
-# increase_nll = False
-if increase_nll:
-    logname = "opensafely_age_hh_with_ridge.log"
+# Starting parameters - and check that the target function evaluates OK at them
+x0_candidates = [
+    np.array([-2.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,]),
+    np.array([-1.5, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,]),
+]
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--add-ridge", action="store_true")
+parser.add_argument("--starting-parameter", type=int, choices=range(len(x0_candidates)))
+args = parser.parse_args()
+
+if args.add_ridge:
+    if args.starting_parameter:
+        logname = (
+            f"opensafely_age_hh_with_ridge_and_param_{args.starting_parameter}.log"
+        )
+    else:
+        logname = "opensafely_age_hh_with_ridge.log"
 else:
-    logname = "opensafely_age_hh_without_ridge.log"
+    if args.starting_parameter:
+        logname = (
+            f"opensafely_age_hh_without_ridge_and_param_{args.starting_parameter}.log"
+        )
+    else:
+        logname = "opensafely_age_hh_without_ridge.log"
+add_ridge = bool(args.add_ridge)  # To keep numba JIT happy
+if args.starting_parameter:
+    x0 = x0_candidates[args.starting_parameter]
+else:
+    x0 = x0_candidates[0]
+
 homedir = pathlib.Path(__file__).resolve().parent.parent
 
 logging.basicConfig(
@@ -37,10 +64,7 @@ logging.basicConfig(
 )
 logging.info("Libraries imported and logging started")
 
-
-optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
-
-# increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
+logging.info("Starting parameters: %s", x0)
 
 with open("output/case_series.pickle", "rb") as f:
     Y = pickle.load(f)
@@ -145,7 +169,7 @@ def mynll(x, Y, XX):
                     return np.inf
                 nlv[i] = -np.log(LA.solve(BB, np.ones(r))[-1])
         nll = np.sum(nlv)
-        if increase_nll:
+        if add_ridge:
             nll += 7.4 * np.sum(x ** 2)  # Comment out this Ridge if not needed
         return nll
     else:
@@ -162,22 +186,6 @@ logging.info("Helper functions defined")
 #
 
 
-# Starting parameters - and check that the target function evaluates OK at them
-
-x0 = np.array(
-    [
-        -2.0,
-        -6.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-    ]
-)
 mynll(x0, Y, XX)
 
 
