@@ -1,0 +1,62 @@
+----------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/kw/Documents/GitHub/households-research/02_hh_an_caseFreq_descriptive_plots.log
+  log type:  text
+ opened on:  24 Nov 2020, 16:15:45
+
+. 
+. 
+. /*Also want to do this by time periods e.g.
+>     Feb - end of May
+>     June - end of Aug
+>     Sep - current date
+> and by age over time!
+> 
+> 
+> 1. average time from first hh infection to last hh infection in all houses - look for those longer
+>  than 4 weeks
+> 2. could do univariable x date, y is gap between first and last
+> 3. Thomas still wants regression to run
+> */
+. 
+. 
+. 
+. 
+. 
+. ******0 % OF PEOPLE WHO HAVE (1) A PRIMARY CARE CLIN DIAGNOSIS FOLLOWED BY (2) A MORE DEFINITE EVE
+> NT (e.g. TEST RESULT, HOSP, DEATH)***********
+. *keep only those people who have ANY of the probable case definitions for this dataset (primary ca
+> re pos test, prim care diag, prim care seq, covid hosp, covid death)
+. count
+  71,401
+
+. keep if case==1
+(158 observations deleted)
+
+. 
+. *create marker for date period
+. generate epiPeriod=.
+(71,243 missing values generated)
+
+. la var epiPeriod "Time period of case-related record during the epidemic"
+
+. 
+end of do-file
+
+. do "/var/folders/g5/db_qw2zn4m14_7r7r2_pfymr0000gn/T//SD00418.000000"
+
+. format caseDate %td
+variable caseDate not found
+r(111);
+
+end of do-file
+
+r(111);
+
+. do "/var/folders/g5/db_qw2zn4m14_7r7r2_pfymr0000gn/T//SD00418.000000"
+
+. format case_date %td
+
+. 
+end of do-file
+

@@ -20,6 +20,7 @@ sysdir set PERSONAL "/Users/kw/Documents/GitHub/households-research/analysis/ado
 ==============================================================================*/
 sysdir set PLUS ./analysis/adofiles
 sysdir set PERSONAL ./analysis/adofiles
+pwd
 import delimited ./output/input.csv, clear
 
 
@@ -782,6 +783,7 @@ la var deathCaseDate "Date of case based on COVID cert death date (earliest of O
 generate caseDate=.
 replace caseDate=min(clinCaseDate, testCaseDate, seqCaseDate, hospCaseDate, deathCaseDate)
 
+
 *drop variables I don't need
 drop covid_tpp_probable - covid_admission_date
 
@@ -796,6 +798,7 @@ tab hh_size
 
 order patient_id age hh_id hh_size caseDate ethnicity indexdate
 ren caseDate case_date
+format case_date %td
 
 *ren primary_care_suspect_case	suspected_date
 *ren first_tested_for_covid		tested_date
@@ -1278,7 +1281,7 @@ label values bmicat bmicatLabel
 
 
 
-save hh_analysis_dataset.dta, replace
+save ./output/hh_analysis_dataset.dta, replace
 
 
 /*
