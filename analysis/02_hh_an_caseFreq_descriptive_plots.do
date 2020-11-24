@@ -51,10 +51,12 @@ and by age over time!
 count
 keep if case==1
 
-*create marker for date period
-generate epiPeriod=.
-la var epiPeriod "Time period of case-related record during the epidemic"
-replace epiPeriod=1 if 
+
+
+
+
+gen indexdate = date(index, "DMY")
+format indexdate %d
 
 cap log close
 

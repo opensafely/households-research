@@ -1279,6 +1279,17 @@ label define bmicatLabel 1 "Underweight" 2 "Normal" 3 "Overweight" 4 "Obese I" 5
 label values bmicat bmicatLabel
 */
 
+*create marker for epidemic time period period
+generate epiPeriod=.
+la var epiPeriod "Time period of case-related record during the epidemic"
+replace epiPeriod=1 if case_date<=date("31may2020", "DMY")
+replace epiPeriod=2 if case_date>=date("01jun2020", "DMY") & case_date<=date("31aug2020", "DMY")
+replace epiPeriod=3 if case_date>=date("01sep2020", "DMY")
+
+label define epiPeriodlbl 1 "<31 May" 2 "01 June - 31 Aug" 3 "01 Sep+" 
+label values epiPeriod epiPeriodlbl
+
+tab epiPeriod, miss
 
 
 save ./output/hh_analysis_dataset.dta, replace
