@@ -182,7 +182,17 @@ def decimal_to_bit_array(d, n_digits):
 # In[15]:
 
 
-x = np.array([-3.0, -2.0, 0.1, 0.2, 0.3, 0.4, 0.5,])
+x = np.array(
+    [
+        -3.0,
+        -2.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+    ]
+)
 
 
 # In[16]:
@@ -317,7 +327,17 @@ def mynll(x, Y, XX):
 
 
 # Indicative parameters - to do, add bounds and mulitple restarts
-x0 = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,])
+x0 = np.array(
+    [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+)
 mynll(x0, Y, XX)
 
 
@@ -520,4 +540,3 @@ print(
 
 
 # In[ ]:
-

@@ -22,7 +22,7 @@ import pickle
 
 
 increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
-#increase_nll = False
+# increase_nll = False
 if increase_nll:
     logname = "opensafely_age_hh_with_ridge.log"
 else:
@@ -38,10 +38,9 @@ logging.basicConfig(
 logging.info("Libraries imported and logging started")
 
 
-
 optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
-#increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
+# increase_nll = len(sys.argv) > 1 and sys.argv[1] == "increase_nll"
 
 with open("output/case_series.pickle", "rb") as f:
     Y = pickle.load(f)
@@ -118,9 +117,11 @@ def mynll(x, Y, XX):
 
                 # Quantities that don't vary through the sum
                 Bk = np.exp(-np.exp(llaG) * np.exp(alpha @ (X.T)))
-                laM = np.exp(llaL) * np.outer(
-                    np.exp(beta @ (X.T)), np.exp(gamma @ (X.T))
-                ) * (m**eta)
+                laM = (
+                    np.exp(llaL)
+                    * np.outer(np.exp(beta @ (X.T)), np.exp(gamma @ (X.T)))
+                    * (m ** eta)
+                )
 
                 BB = np.zeros((r, r))  # To be the Ball matrix
                 for jd in range(0, r):
@@ -163,7 +164,20 @@ logging.info("Helper functions defined")
 
 # Starting parameters - and check that the target function evaluates OK at them
 
-x0 = np.array([-2.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,])
+x0 = np.array(
+    [
+        -2.0,
+        -6.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+)
 mynll(x0, Y, XX)
 
 
@@ -260,30 +274,30 @@ logging.info(
     )
 )
 
-mymu = xhat[[0,2,3]]
-mySig = covmat[[0,2,3],:][:,[0,2,3]]
+mymu = xhat[[0, 2, 3]]
+mySig = covmat[[0, 2, 3], :][:, [0, 2, 3]]
 m = 4000
 
-for k in range(2,7):
+for k in range(2, 7):
     sarvec = np.zeros(m)
     try:
-        for i in range(0,m):
-            uu = np.random.multivariate_normal(mymu,mySig)
-            eta = (4./np.pi)*np.arctan(uu[2])
-            sarvec[i] = 100.*(1.-phi(np.exp(uu[0])*(k**eta),uu[1]))
+        for i in range(0, m):
+            uu = np.random.multivariate_normal(mymu, mySig)
+            eta = (4.0 / np.pi) * np.arctan(uu[2])
+            sarvec[i] = 100.0 * (1.0 - phi(np.exp(uu[0]) * (k ** eta), uu[1]))
     except ValueError as e:
         if str(e) == "array must not contain infs or NaNs":
-            logging.info("Unable to compute baseline p({:d}), got: {!r}".format(k,e))
+            logging.info("Unable to compute baseline p({:d}), got: {!r}".format(k, e))
         else:
             raise
     else:
-        eta = (4./np.pi)*np.arctan(xhat[3])
+        eta = (4.0 / np.pi) * np.arctan(xhat[3])
         logging.info(
             "p({:d}) is {:.5f} ({:.5f},{:.5f}) %".format(
-            k,
-            100.*(1.-phi(np.exp(xhat[0])*(k**eta),xhat[2])),
-            np.percentile(sarvec,2.5),
-            np.percentile(sarvec,97.5),
+                k,
+                100.0 * (1.0 - phi(np.exp(xhat[0]) * (k ** eta), xhat[2])),
+                np.percentile(sarvec, 2.5),
+                np.percentile(sarvec, 97.5),
             )
         )
 
@@ -331,4 +345,3 @@ logging.info(
         100.0 * np.exp(xhat[9] + 1.96 * stds[9]),
     )
 )
-

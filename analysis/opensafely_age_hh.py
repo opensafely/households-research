@@ -151,7 +151,19 @@ logging.info("Helper functions defined")
 
 # Starting parameters - and check that the target function evaluates OK at them
 
-x0 = np.array([-2.0, -5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,])
+x0 = np.array(
+    [
+        -2.0,
+        -5.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+)
 mynll(x0, Y, XX)
 
 
@@ -307,4 +319,3 @@ logging.info(
         100.0 * np.exp(xhat[8] + 1.96 * stds[8]),
     )
 )
-
