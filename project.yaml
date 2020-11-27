@@ -17,23 +17,6 @@ actions:
       highly_sensitive:
         allvars: hh_analysis_dataset.dta
 
-  descriptive_notebook:
-    run: jupyter:latest jupyter nbconvert /workspace/analysis/opensafely_eda_test_notebook.ipynb --execute --to html --output-dir=/workspace --ExecutePreprocessor.timeout=86400
-    needs: [prepare_data]
-    outputs:
-      moderately_sensitive:
-        notebook: opensafely_eda_test_notebook.html
-        ages: analysis/ages.png
-        hhsize: analysis/hh_sizes.png
-        cases: analysis/hh_cases_*.png
-
-  vo_test:
-    run: python:latest python analysis/fit_vo.py 20
-    needs: []
-    outputs:
-      moderately_sensitive:
-        vo: vo.txt
-
   generate_model_data:
     run: python:latest python analysis/generate_model_data.py
     needs: [prepare_data]
@@ -43,42 +26,152 @@ actions:
         timeseries: output/case_series.pickle
         agecats: output/age_categories_series.pickle
 
-  run_model_with_ridge:
-    run: python:latest python analysis/opensafely_age_hh_th.py --add-ridge
+  run_model_0_0_13:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 13 --add-ridge 0.0
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
-        log: opensafely_age_hh_with_ridge.log
+        log: opensafely_age_hh_ridge_0_0_and_seed_13.log
 
-  run_model_no_ridge:
-    run: python:latest python analysis/opensafely_age_hh_th.py
-    needs: [generate_model_data]
-    outputs:
-      moderately_sensitive:
-        log: opensafely_age_hh_without_ridge.log
 
-  run_model_with_ridge_and_param_1:
-    run: python:latest python analysis/opensafely_age_hh_th.py --add-ridge --starting-parameter=1
+  run_model_7_4_13:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 13 --add-ridge 7.4
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
-        log: opensafely_age_hh_with_ridge_and_param_1.log
+        log: opensafely_age_hh_ridge_7_4_and_seed_13.log
 
-  run_model_no_ridge_and_param_1:
-    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter=1
+
+  run_model_20_0_13:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 13 --add-ridge 20.0
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
-        log: opensafely_age_hh_without_ridge_and_param_1.log
+        log: opensafely_age_hh_ridge_20_0_and_seed_13.log
+
+
+  run_model_0_0_15:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 15 --add-ridge 0.0
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_0_0_and_seed_15.log
+
+
+  run_model_7_4_15:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 15 --add-ridge 7.4
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_7_4_and_seed_15.log
+
+
+  run_model_20_0_15:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 15 --add-ridge 20.0
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_20_0_and_seed_15.log
+
+
+  run_model_0_0_19:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 19 --add-ridge 0.0
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_0_0_and_seed_19.log
+
+
+  run_model_7_4_19:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 19 --add-ridge 7.4
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_7_4_and_seed_19.log
+
+
+  run_model_20_0_19:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 19 --add-ridge 20.0
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_20_0_and_seed_19.log
+
+
+  run_model_0_0_42:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 42 --add-ridge 0.0
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_0_0_and_seed_42.log
+
+
+  run_model_7_4_42:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 42 --add-ridge 7.4
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_7_4_and_seed_42.log
+
+
+  run_model_20_0_42:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 42 --add-ridge 20.0
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_20_0_and_seed_42.log
+
+
+  run_model_0_0_56:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 56 --add-ridge 0.0
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_0_0_and_seed_56.log
+
+
+  run_model_7_4_56:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 56 --add-ridge 7.4
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_7_4_and_seed_56.log
+
+
+  run_model_20_0_56:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 56 --add-ridge 20.0
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_20_0_and_seed_56.log
+
+
+  run_model_0_0_80:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 80 --add-ridge 0.0
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_0_0_and_seed_80.log
+
+
+  run_model_7_4_80:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 80 --add-ridge 7.4
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_7_4_and_seed_80.log
+
+
+  run_model_20_0_80:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 80 --add-ridge 20.0
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_20_0_and_seed_80.log
 
   run_all:
     needs:
-      [
-        run_model_no_ridge,
-        run_model_with_ridge,
-        run_model_no_ridge_and_param_1,
-        run_model_with_ridge_and_param_1,
-      ]
+      [run_model_0_0_13, run_model_7_4_13, run_model_20_0_13, run_model_0_0_15, run_model_7_4_15, run_model_20_0_15, run_model_0_0_19, run_model_7_4_19, run_model_20_0_19, run_model_0_0_42, run_model_7_4_42, run_model_20_0_42, run_model_0_0_56, run_model_7_4_56, run_model_20_0_56, run_model_0_0_80, run_model_7_4_80, run_model_20_0_80]
     # In order to be valid this action needs to define a run commmand and some
     # output. We don't really care what these are but the below does the trick.
     # In a future release of the platform, this special action won't need to be

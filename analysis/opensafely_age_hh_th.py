@@ -46,17 +46,18 @@ bb = np.array(
 #]
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--add-ridge", action="store_true")
+parser.add_argument("--add-ridge", type=float, default=0.0)
 parser.add_argument("--starting-parameter", type=int)
 args = parser.parse_args()
 
 if args.add_ridge:
+    ridgestr = str(args.add_ridge).replace('.','_')
     if args.starting_parameter:
         logname = (
-            f"opensafely_age_hh_with_ridge_and_seed_{args.starting_parameter}.log"
+            f"opensafely_age_hh_ridge_{ridgestr}_and_seed_{args.starting_parameter}.log"
         )
     else:
-        logname = "opensafely_age_hh_with_ridge_midpoint_start.log"
+        logname = f"opensafely_age_hh_ridge_{ridgestr}_midpoint_start.log"
 else:
     if args.starting_parameter:
         logname = (
@@ -64,7 +65,8 @@ else:
         )
     else:
         logname = "opensafely_age_hh_without_ridge_midpoint_start.log"
-add_ridge = bool(args.add_ridge)  # To keep numba JIT happy
+add_ridge = float(args.add_ridge)  # To keep numba JIT happy
+
 if args.starting_parameter:
     np.random.seed(args.starting_parameter)
     x0 = np.random.uniform(bb[:,0],bb[:,1])
@@ -186,8 +188,7 @@ def mynll(x, Y, XX):
                     return np.inf
                 nlv[i] = -np.log(LA.solve(BB, np.ones(r))[-1])
         nll = np.sum(nlv)
-        if add_ridge:
-            nll += 7.4 * np.sum(x ** 2)  # Comment out this Ridge if not needed
+        nll += add_ridge * np.sum(x ** 2)
         return nll
     else:
         nll = np.inf
