@@ -23,36 +23,55 @@ import pickle
 
 optimize_maxiter = 1000  #  Reduce to run faster but possibly not solve
 
-# Starting parameters - and check that the target function evaluates OK at them
-x0_candidates = [
-    np.array([-2.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,]),
-    np.array([-1.5, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,]),
-]
+# Bounding box on parameters - TO DO: since this contains nages implicitly, edit later
+bb = np.array(
+    [
+        [-3.0, -1.0],
+        [-7.0, -3.0],
+        [-10.0, 10.0],
+        [-10.0, 10.0],
+        [-3.0, 3.0],
+        [-3.0, 3.0],
+        [-3.0, 3.0],
+        [-3.0, 3.0],
+        [-3.0, 3.0],
+        [-3.0, 3.0],
+    ]
+)
+
+## Starting parameters - and check that the target function evaluates OK at them
+#x0_candidates = [
+    #np.array([-2.0, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,]),
+    #np.array([-1.5, -6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,]),
+#]
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--add-ridge", action="store_true")
-parser.add_argument("--starting-parameter", type=int, choices=range(len(x0_candidates)))
+parser.add_argument("--add-ridge", type=float, default=0.0)
+parser.add_argument("--starting-parameter", type=int)
 args = parser.parse_args()
 
 if args.add_ridge:
+    ridgestr = str(args.add_ridge).replace('.','_')
     if args.starting_parameter:
         logname = (
-            f"opensafely_age_hh_with_ridge_and_param_{args.starting_parameter}.log"
+            f"opensafely_age_hh_ridge_{ridgestr}_and_seed_{args.starting_parameter}.log"
         )
     else:
-        logname = "opensafely_age_hh_with_ridge.log"
+        logname = f"opensafely_age_hh_ridge_{ridgestr}_midpoint_start.log"
 else:
     if args.starting_parameter:
         logname = (
-            f"opensafely_age_hh_without_ridge_and_param_{args.starting_parameter}.log"
+            f"opensafely_age_hh_without_ridge_and_seed_{args.starting_parameter}.log"
         )
     else:
-        logname = "opensafely_age_hh_without_ridge.log"
-add_ridge = bool(args.add_ridge)  # To keep numba JIT happy
+        logname = "opensafely_age_hh_without_ridge_midpoint_start.log"
+add_ridge = float(args.add_ridge)  # To keep numba JIT happy
+
 if args.starting_parameter:
-    x0 = x0_candidates[args.starting_parameter]
+    np.random.seed(args.starting_parameter)
+    x0 = np.random.uniform(bb[:,0],bb[:,1])
 else:
-    x0 = x0_candidates[0]
+    x0 = np.mean(bb,1)
 
 homedir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -169,8 +188,7 @@ def mynll(x, Y, XX):
                     return np.inf
                 nlv[i] = -np.log(LA.solve(BB, np.ones(r))[-1])
         nll = np.sum(nlv)
-        if add_ridge:
-            nll += 7.4 * np.sum(x ** 2)  # Comment out this Ridge if not needed
+        nll += add_ridge * np.sum(x ** 2)
         return nll
     else:
         nll = np.inf
@@ -188,28 +206,12 @@ logging.info("Helper functions defined")
 
 mynll(x0, Y, XX)
 
-
 logging.info("Objective function evaluated at one value")
 
 
 def callbackF(x):
     print(f"Evaluated at {x}")
 
-
-bb = np.array(
-    [
-        [-3.0, -1.0],
-        [-7.0, -3.0],
-        [-10.0, 10.0],
-        [-10.0, 10.0],
-        [-3.0, 3.0],
-        [-3.0, 3.0],
-        [-3.0, 3.0],
-        [-3.0, 3.0],
-        [-3.0, 3.0],
-        [-3.0, 3.0],
-    ]
-)
 
 
 # First try from (essentially) the origin using Nelder-Mead
