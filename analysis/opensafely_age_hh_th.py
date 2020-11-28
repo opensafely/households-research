@@ -50,21 +50,14 @@ parser.add_argument("--add-ridge", type=float, default=0.0)
 parser.add_argument("--starting-parameter", type=int)
 args = parser.parse_args()
 
-if args.add_ridge:
-    ridgestr = str(args.add_ridge).replace('.','_')
-    if args.starting_parameter:
-        logname = (
-            f"opensafely_age_hh_ridge_{ridgestr}_and_seed_{args.starting_parameter}.log"
-        )
-    else:
-        logname = f"opensafely_age_hh_ridge_{ridgestr}_midpoint_start.log"
+ridgestr = str(args.add_ridge).replace('.','_')
+if args.starting_parameter:
+    logname = (
+        f"opensafely_age_hh_ridge_{ridgestr}_and_seed_{args.starting_parameter}.log"
+    )
 else:
-    if args.starting_parameter:
-        logname = (
-            f"opensafely_age_hh_without_ridge_and_seed_{args.starting_parameter}.log"
-        )
-    else:
-        logname = "opensafely_age_hh_without_ridge_midpoint_start.log"
+    logname = f"opensafely_age_hh_ridge_{ridgestr}_midpoint_start.log"
+
 add_ridge = float(args.add_ridge)  # To keep numba JIT happy
 
 if args.starting_parameter:
