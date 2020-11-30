@@ -3,11 +3,13 @@ DO FILE NAME:			02_an_caseFreq_descriptive_plots
 PROJECT:				Households and COVID
 AUTHOR:					K Wing
 DATE: 					25th November 2020
-DESCRIPTION OF FILE:	Performs plots/tabulations of:
-                            (1) Proportion of people who had a positive test result or were hosp with COVID or died with COVID after a primary care diagnosis
-                                (by age groups and in different time periods)
-                            (2) Average time from first to last hh infection
-                            (3) Plots of number of cases in different age groups, by time period, and by different type of case definition
+DESCRIPTION OF FILE:	Performs plots and descriptive stats for the following (also see https://docs.google.com/document/d/15m-ajw2glvPpqUAlUgi90V1LmNoTHRINTqiEqleMRXM/edit)
+
+(1) HH size distribution in the data: in all hhs (DONE), in hh with an infection (2 panel figure of frequency of households of size x)
+(2) Frequency of case definition types: freq of each type of case in the sample, 2 panel figure of time series of total endpoints, time series stratified by endpoint type, plot of age and different types of case definition
+(3) Household size case frequency distributions: blue histograms showing hh secondary attack rate, possibly stratified by different phases
+(4) Time between cases in a household: histogram showing time from first to last definition of case in a household
+
 
 
 DATASETS USED:			hh_analysis_datasetREDVARS
@@ -41,6 +43,35 @@ and by age over time!
 2. could do univariable x date, y is gap between first and last
 3. Thomas still wants regression to run
 */
+
+
+
+
+
+**********************(1) HH size distribution in the data: in all hhs, in hh with an infection (2 panel figure of frequency of households of size x)***************
+tab hh_size
+*(a) distribution of hh size overall
+*hist hh_size, frequency addlabels discrete xlabel(1(1)`2') title (Household size: `2', size (medium)) subtitle(`ethnicity' "(households with no cases: `4')", size (medium)) saving(`2'_`ethnicity', replace)
+*set scheme s2color
+hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) ylabel (, format(%5.0f)) bcolor(erose)
+
+
+*(b) distribution of hh size in those with an infection
+
+hist hh_size, frequency addlabels discrete xlabel(1(1)9) title ("Overall distribution of household sizes", size (medium)) subtitle(`ethnicity' "(households with no cases: `4')", size (medium)) saving(`2'_`ethnicity', replace)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
