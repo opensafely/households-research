@@ -240,6 +240,7 @@ drop if hh_size<=1
 drop if hh_size>10
 tab hh_size
 
+
 /*
 *create household composition variable
 *edited dataset that only contains variables that will be used in the regression analysis (and were for shared in dummydata with Thomas and Heather)

@@ -5,7 +5,7 @@ AUTHOR:					K Wing
 DATE: 					25th November 2020
 DESCRIPTION OF FILE:	Performs plots and descriptive stats for the following (also see https://docs.google.com/document/d/15m-ajw2glvPpqUAlUgi90V1LmNoTHRINTqiEqleMRXM/edit)
 
-(1) HH size distribution in the data: in all hhs (DONE), in hh with an infection (2 panel figure of frequency of households of size x)
+(1) HH size distribution in the data: in all hhs, in hh with an infection (2 panel figure of frequency of households of size x) - DONE
 (2) Frequency of case definition types: freq of each type of case in the sample, 2 panel figure of time series of total endpoints, time series stratified by endpoint type, plot of age and different types of case definition
 (3) Household size case frequency distributions: blue histograms showing hh secondary attack rate, possibly stratified by different phases
 (4) Time between cases in a household: histogram showing time from first to last definition of case in a household
@@ -52,26 +52,18 @@ and by age over time!
 tab hh_size
 *(a) distribution of hh size overall
 *hist hh_size, frequency addlabels discrete xlabel(1(1)`2') title (Household size: `2', size (medium)) subtitle(`ethnicity' "(households with no cases: `4')", size (medium)) saving(`2'_`ethnicity', replace)
-*set scheme s2color
-hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) ylabel (, format(%5.0f)) bcolor(erose)
+*see: https://www.stata.com/manuals13/g-4colorstyle.pdf
+hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) ylabel (, format(%5.0f)) bcolor(eltgreen) title ("{bf:All households}", size(medium))  saving(hh_Hist_Overall, replace)
 
 
 *(b) distribution of hh size in those with an infection
+preserve
+	keep if totCasesInHH>0
+	hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) yscale(off) bcolor(erose) title ("{bf:Households with COVID-19}", size(medium)) saving(hh_Hist_withAtLeastOneInfection, replace)
+restore
 
-hist hh_size, frequency addlabels discrete xlabel(1(1)9) title ("Overall distribution of household sizes", size (medium)) subtitle(`ethnicity' "(households with no cases: `4')", size (medium)) saving(`2'_`ethnicity', replace)
-
-
-
-
-
-
-
-
-
-
-
-
-
+gr combine hh_Hist_Overall.gph hh_Hist_withAtLeastOneInfection.gph, title("Distribution of household sizes in OpenSAFELY", size(medium))
+graph export ./analysis/output/an_caseFreq_descr_overall_HH_Histogram.svg, as(svg) replace
 
 
 
