@@ -17,6 +17,14 @@ actions:
       highly_sensitive:
         allvars: hh_analysis_dataset.dta
 
+  output_descriptive:
+    run: stata-mp:latest analysis/02_hh_an_caseFreq_descriptive_plots.do
+    needs: [prepare_data]
+    outputs:
+      moderately_sensitive:
+        graph: released_outputs/an_caseFreq_descr_overall_HH_Histogram.svg
+        log: released_outputs/02_hh_an_caseFreq_descriptive_plots.log
+
   generate_model_data:
     run: python:latest python analysis/generate_model_data.py
     needs: [prepare_data]
