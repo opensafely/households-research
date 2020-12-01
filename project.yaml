@@ -22,7 +22,8 @@ actions:
     needs: [prepare_data]
     outputs:
       moderately_sensitive:
-        graph: ./analysis/output/an_caseFreq_descr_overall_HH_Histogram.svg
+        graph: released_outputs/an_caseFreq_descr_overall_HH_Histogram.svg
+        log: released_outputs/02_hh_an_caseFreq_descriptive_plots.log
 
   generate_model_data:
     run: python:latest python analysis/generate_model_data.py

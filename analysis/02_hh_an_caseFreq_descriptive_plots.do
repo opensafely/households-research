@@ -29,7 +29,7 @@ sysdir set PERSONAL ./analysis/adofiles
 use  ./output/hh_analysis_dataset.dta, clear
 
 cap log close
-log using "02_hh_an_caseFreq_descriptive_plots.log", replace t
+log using "./released_outputs/02_hh_an_caseFreq_descriptive_plots.log", replace t
 
 
 /*Also want to do this by time periods e.g.
@@ -63,12 +63,15 @@ preserve
 restore
 
 gr combine hh_Hist_Overall.gph hh_Hist_withAtLeastOneInfection.gph, title("Distribution of household sizes in OpenSAFELY", size(medium))
-graph export ./analysis/output/an_caseFreq_descr_overall_HH_Histogram.svg, as(svg) replace
+graph export ./released_outputs/an_caseFreq_descr_overall_HH_Histogram.svg, as(svg) replace
+erase hh_Hist_Overall.gph
+erase hh_Hist_withAtLeastOneInfection.gph
+
+log close
 
 
 
-
-
+/*
 ******0 % OF PEOPLE WHO HAVE (1) A PRIMARY CARE CLIN DIAGNOSIS FOLLOWED BY (2) A MORE DEFINITE EVENT (e.g. TEST RESULT, HOSP, DEATH)***********
 *keep only those people who have ANY of the probable case definitions for this dataset (primary care pos test, prim care diag, prim care seq, covid hosp, covid death)
 count
