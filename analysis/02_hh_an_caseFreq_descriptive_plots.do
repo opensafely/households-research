@@ -59,7 +59,8 @@ hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) ylabel (, format(%5.0f
 *(b) distribution of hh size in those with an infection
 preserve
 	keep if totCasesInHH>0
-	hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) yscale(off) bcolor(erose) title ("{bf:Households with COVID-19}", size(medium)) saving(hh_Hist_withAtLeastOneInfection, replace)
+	*hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) yscale(off) bcolor(erose) title ("{bf:Households with COVID-19}", size(medium)) saving(hh_Hist_withAtLeastOneInfection, replace)
+	hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) ylabel (, format(%5.0f)) bcolor(erose) title ("{bf:Households with COVID-19}", size(medium)) saving(hh_Hist_withAtLeastOneInfection, replace)
 restore
 
 gr combine hh_Hist_Overall.gph hh_Hist_withAtLeastOneInfection.gph, title("Distribution of household sizes in OpenSAFELY", size(medium))
