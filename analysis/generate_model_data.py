@@ -30,7 +30,7 @@ logging.info("Libraries imported and logging started")
 
 def get_df():
     if "test_data" not in sys.argv:
-        df = pd.read_stata("hh_analysis_dataset.dta", columns=["hh_id", "age", "case"])
+        df = pd.read_stata("./output/hh_analysis_dataset.dta", columns=["hh_id", "age", "case"])
     else:
         # test data
         np.random.seed(42)
