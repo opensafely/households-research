@@ -89,25 +89,53 @@ twoway (histogram hh_size,  frequency discrete barw(0.99) xlabel(2(1)9) bcolor(e
 graph export ./released_outputs/an_caseFreq_descr_overall_HH_HistogramOverlay.svg, as(svg) replace
 
 
+
+
+
+**************2 % OF PEOPLE WHO HAVE (1) A PRIMARY CARE CLIN DIAGNOSIS FOLLOWED BY (2) A MORE DEFINITE EVENT (e.g. TEST RESULT, HOSP, DEATH)***********
+*keep only those people who have ANY of the probable case definitions for this dataset (primary care pos test, prim care diag, prim care seq, covid hosp, covid death)
+use  ./output/hh_analysis_dataset.dta, clear
+
+
+*what proportion of the people who were clinCases, went onto become any of testCase, hospCase or deathCase?
+*proportion that were any of these
+safetab case
+
+*what proportion of people were clin case and also one of the more definite cases?
+display "**************Type of cases in data (over entire time period)**************"
+*all types of case
+display "All cases:"
+safetab case
+
+generate testCaseDefine=0
+replace testCaseDefine=1 if testCaseDate==case_date
+display "Cases defined by primary care positive test"
+safetab testCaseDefine
+
+generate hospCaseDefine=0
+replace hospCaseDefine=1 if hospCaseDate==case_date
+display "Cases defined by hosp with COVID"
+safetab hospCaseDefine
+
+generate deathCaseDefine=0
+replace deathCaseDefine=1 if deathCaseDate==case_date
+display "Cases defined by COVID on death certificate"
+safetab deathCaseDefine
+
+generate clinCaseDefine=0
+replace clinCaseDefine=1 if clinCaseDate==case_date
+display "Cases defined by clin diag in primary care"
+safetab clinCaseDefine
+
+*proportion of clinCases that also had a more definite outcome
+display "Proportion of clin diag in primary care cases who also had a more definite case event"
+safetab clinCase moreCertainCase if clinCase==1, row
+
+
 log close
 
 
-
 /*
-******0 % OF PEOPLE WHO HAVE (1) A PRIMARY CARE CLIN DIAGNOSIS FOLLOWED BY (2) A MORE DEFINITE EVENT (e.g. TEST RESULT, HOSP, DEATH)***********
-*keep only those people who have ANY of the probable case definitions for this dataset (primary care pos test, prim care diag, prim care seq, covid hosp, covid death)
-count
-keep if case==1
-
-
-
-
-
-gen indexdate = date(index, "DMY")
-format indexdate %d
-
-cap log close
-
 
 **************code from Dan to adapt************
 /*
