@@ -15,7 +15,7 @@ actions:
     needs: [generate_cohort]
     outputs:
       highly_sensitive:
-        allvars: hh_analysis_dataset.dta
+        allvars: output/hh_analysis_dataset.dta
 
   output_descriptive:
     run: stata-mp:latest analysis/02_hh_an_caseFreq_descriptive_plots.do
