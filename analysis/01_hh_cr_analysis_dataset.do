@@ -728,61 +728,76 @@ Outcome summary:
 
 ******SORT OUT OUTCOME VARIABLES THAT I NEED*****
 
-*(1)create a main outcome variable for transmission model that has all three probable cases from primary care, both death definitions and hospital admission date
-generate case=0
-replace case=1 if covid_tpp_probable!="" 
-replace case=1 if died_ons_covid_flag_any==1 
-replace case=1 if died_ons_covid_flag_underlying==1 
-replace case=1 if died_date_cpns!=""
-replace case=1 if covid_admission_date!=""
-la var case "Prim_care: pos test, diag or sequel; any death cert COVID; COVID hosp adm"
-*add people who had confirmed covid death as cases
 
-*(2)create outcomes and dates for each of the pos test, clin diag, covid sequelue, COVID hospitalisation, COVID death
-generate clinCase=0
-replace clinCase=1 if covid_tpp_probableclindiag!="" 
-la var clinCase "Primary care clin diag case"
-generate clinCaseDate=date(covid_tpp_probableclindiag, "YMD")
-format clinCaseDate %td 
+/*making this a program as would like to do it separately for each epi time period (All, <31 May, 01Jun-31Aug, 01Sep */
 
-generate testCase=0
-replace testCase=1 if covid_tpp_probabletest!="" 
-la var testCase "Primary care clin test case"
-generate testCaseDate=date(covid_tpp_probabletest, "YMD")
-format testCaseDate %td 
+	*(1)create a main outcome variable for transmission model that has all three probable cases from primary care, both death definitions and hospital admission date
+	generate case=0
+	replace case=1 if covid_tpp_probable!="" 
+	replace case=1 if died_ons_covid_flag_any==1 
+	replace case=1 if died_ons_covid_flag_underlying==1 
+	replace case=1 if died_date_cpns!=""
+	replace case=1 if covid_admission_date!=""
+	la var case "Prim_care: pos test, diag or sequel; any death cert COVID; COVID hosp adm"
+	*add people who had confirmed covid death as cases
 
-generate seqCase=0
-replace seqCase=1 if covid_tpp_probableseq!="" 
-la var seqCase "Primary care sequele case"
-generate seqCaseDate=date(covid_tpp_probableseq, "YMD")
-format seqCaseDate %td 
 
-generate hospCase=0
-replace hospCase=1 if covid_admission_date!=""
-la var hospCase "Case based on hosp admission with COVID"
-generate hospCaseDate=date(covid_admission_date, "YMD")
-format hospCaseDate %td
+	*(2)create outcomes and dates for each of the pos test, clin diag, covid sequelue, COVID hospitalisation, COVID death
+	generate clinCase=0
+	replace clinCase=1 if covid_tpp_probableclindiag!="" 
+	la var clinCase "Primary care clin diag case"
+	generate clinCaseDate=date(covid_tpp_probableclindiag, "YMD")
+	format clinCaseDate %td 
 
-generate deathCase=0
-replace deathCase=1 if died_ons_covid_flag_any==1|died_ons_covid_flag_underlying==1|died_date_cpns!=""
-la var deathCase "Case based on ons or cpns death cert"
-*prepare ons death date
-generate died_date_ons2=date(died_date_ons, "YMD")
-drop died_date_ons
-rename died_date_ons2 died_date_ons
-format died_date_ons %td
-*prepare cpns death date
-generate died_date_cpns2=date(died_date_cpns, "YMD")
-drop died_date_cpns
-rename died_date_cpns2 died_date_cpns
-format died_date_cpns %td
-*take the earliest date if both are populated
-generate deathCaseDate=min(died_date_ons, died_date_cpns)
-la var deathCaseDate "Date of case based on COVID cert death date (earliest of ONS or CPNS)"
+	generate testCase=0
+	replace testCase=1 if covid_tpp_probabletest!="" 
+	la var testCase "Primary care clin test case"
+	generate testCaseDate=date(covid_tpp_probabletest, "YMD")
+	format testCaseDate %td 
 
-*create a casedate for the overall case - earliest of all the case type dates
-generate caseDate=.
-replace caseDate=min(clinCaseDate, testCaseDate, seqCaseDate, hospCaseDate, deathCaseDate)
+	generate seqCase=0
+	replace seqCase=1 if covid_tpp_probableseq!="" 
+	la var seqCase "Primary care sequele case"
+	generate seqCaseDate=date(covid_tpp_probableseq, "YMD")
+	format seqCaseDate %td 
+
+	generate hospCase=0
+	replace hospCase=1 if covid_admission_date!=""
+	la var hospCase "Case based on hosp admission with COVID"
+	generate hospCaseDate=date(covid_admission_date, "YMD")
+	format hospCaseDate %td
+
+	generate deathCase=0
+	replace deathCase=1 if died_ons_covid_flag_any==1|died_ons_covid_flag_underlying==1|died_date_cpns!=""
+	la var deathCase "Case based on ons or cpns death cert"
+	*prepare ons death date
+	generate died_date_ons2=date(died_date_ons, "YMD")
+	drop died_date_ons
+	rename died_date_ons2 died_date_ons
+	format died_date_ons %td
+	*prepare cpns death date
+	generate died_date_cpns2=date(died_date_cpns, "YMD")
+	drop died_date_cpns
+	rename died_date_cpns2 died_date_cpns
+	format died_date_cpns %td
+	*take the earliest date if both are populated
+	generate deathCaseDate=min(died_date_ons, died_date_cpns)
+	la var deathCaseDate "Date of case based on COVID cert death date (earliest of ONS or CPNS)"
+
+
+	*create a casedate for the overall case - earliest of all the case type dates
+	generate caseDate=.
+	replace caseDate=min(clinCaseDate, testCaseDate, seqCaseDate, hospCaseDate, deathCaseDate)
+
+
+	*create a version of this that is all the "more certain" case types (all except covid_tpp_probableclindiag)
+	generate moreCertainCase=case
+	*if person only had clinCase, then they are not a moreCertainCase
+	replace moreCertainCase=0 if clinCase==1 & testCaseDate==0 & seqCaseDate==0 & hospCaseDate==0 & deathCaseDate==0
+	la var moreCertainCase "Had at least one of the case events that was more certain than clinCase"
+
+	
+	
 
 
 *drop variables I don't need
@@ -1280,6 +1295,7 @@ label define bmicatLabel 1 "Underweight" 2 "Normal" 3 "Overweight" 4 "Obese I" 5
 label values bmicat bmicatLabel
 */
 
+
 *create marker for epidemic time period period
 generate epiPeriod=.
 la var epiPeriod "Time period of case-related record during the epidemic"
@@ -1291,6 +1307,7 @@ label define epiPeriodlbl 1 "<31 May" 2 "01 June - 31 Aug" 3 "01 Sep+"
 label values epiPeriod epiPeriodlbl
 
 tab epiPeriod, miss
+
 
 
 save ./output/hh_analysis_dataset.dta, replace
