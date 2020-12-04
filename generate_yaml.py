@@ -8,8 +8,8 @@ action_template = """
         log: opensafely_age_hh_ridge_{ridus}_and_seed_{seed}.log
 """
 
-seeds = [ 13, 15, 19, 42, 56, 80 ]
-ridges = [ 0.0, 7.4, 20.0 ]
+seeds = [ 1, 3, 5, 81, 83, 85, 23, 37 ]
+ridges = [ 20.1 , 54.6 ]
 
 for s in seeds:
     for r in ridges:
