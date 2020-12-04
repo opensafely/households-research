@@ -49,26 +49,24 @@ and by age over time!
 
 
 **********************(1) HH size distribution in the data: in all hhs, in hh with an infection (2 panel figure of frequency of households of size x)***************
-tab hh_size
-
-*need to reduce to one record per houshold
-duplicates drop hh_id, force
+*helper variables
 count
-tab totCasesInHH
-tab hh_size
+local totalHHCount=r(N)
+count if totCasesInHH>0
+local infectHHCount=r(N)
 
 *****(a)Side by side version*******
 *distribution of hh size overall
 *hist hh_size, frequency addlabels discrete xlabel(1(1)`2') title (Household size: `2', size (medium)) subtitle(`ethnicity' "(households with no cases: `4')", size (medium)) saving(`2'_`ethnicity', replace)
 *see: https://www.stata.com/manuals13/g-4colorstyle.pdf
-hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) ylabel (, format(%5.0f)) bcolor(eltgreen) title ("{bf:All households}", size(medium))  saving(hh_Hist_Overall, replace)
+hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) ylabel (, format(%5.0f)) bcolor(eltgreen) title ("{bf:All households} (n=`totalHHCount')", size(medium))  saving(hh_Hist_Overall, replace)
 
 
 *distribution of hh size in those with an infection
 preserve
 	keep if totCasesInHH>0
 	*hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) yscale(off) bcolor(erose) title ("{bf:Households with COVID-19}", size(medium)) saving(hh_Hist_withAtLeastOneInfection, replace)
-	hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) ylabel (, format(%5.0f)) bcolor(erose) title ("{bf:Households with COVID-19}", size(medium)) saving(hh_Hist_withAtLeastOneInfection, replace)
+	hist hh_size, frequency discrete barw(0.99) xlabel(2(1)9) ylabel (, format(%5.0f)) bcolor(erose) title ("{bf:Households with COVID-19} (n=`infectHHCount')", size(medium)) saving(hh_Hist_withAtLeastOneInfection, replace)
 restore
 
 gr combine hh_Hist_Overall.gph hh_Hist_withAtLeastOneInfection.gph, title("Distribution of household sizes in OpenSAFELY", size(medium))
@@ -78,11 +76,6 @@ erase hh_Hist_withAtLeastOneInfection.gph
 
 
 *****(b)Overlay version*******
-*helper variables for overlay version
-count
-local totalHHCount=r(N)
-count if totCasesInHH>0
-local infectHHCount=r(N)
 
 twoway (histogram hh_size,  frequency discrete barw(0.99) xlabel(2(1)9) bcolor(eltgreen)) (histogram hh_size if totCasesInHH>0, frequency discrete barw(0.99) xlabel(2(1)9) bcolor(erose)), legend(size (small) order(1 "All households (n=`totalHHCount')" 2 "Households with COVID-19 (n=`infectHHCount')") ) title(Distribution of household sizes in OpenSAFELY, size(medium))
 
@@ -108,22 +101,22 @@ display "All cases:"
 safetab case
 
 generate testCaseDefine=0
-replace testCaseDefine=1 if testCaseDate==case_date
+replace testCaseDefine=1 if testCase==1 & testCaseDate==case_date
 display "Cases defined by primary care positive test"
 safetab testCaseDefine
 
 generate hospCaseDefine=0
-replace hospCaseDefine=1 if hospCaseDate==case_date
+replace hospCaseDefine=1 if hospCase==1 & hospCaseDate==case_date
 display "Cases defined by hosp with COVID"
 safetab hospCaseDefine
 
 generate deathCaseDefine=0
-replace deathCaseDefine=1 if deathCaseDate==case_date
+replace deathCaseDefine=1 if deathCase==1 & deathCaseDate==case_date
 display "Cases defined by COVID on death certificate"
 safetab deathCaseDefine
 
 generate clinCaseDefine=0
-replace clinCaseDefine=1 if clinCaseDate==case_date
+replace clinCaseDefine=1 if clinCase==1 & clinCaseDate==case_date
 display "Cases defined by clin diag in primary care"
 safetab clinCaseDefine
 
