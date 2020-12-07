@@ -125,6 +125,65 @@ display "Proportion of clin diag in primary care cases who also had a more defin
 safetab clinCase moreCertainCase if clinCase==1, row
 
 
+
+
+
+
+cap prog drop generaterow
+program define generaterow
+syntax, variable(varname) condition(string) 
+	
+	*put the varname and condition to left so that alignment can be checked vs shell
+	file write tablecontent ("`variable'") _tab ("`condition'") _tab
+	
+	foreach hivlevel of numlist 0 1{
+	
+	safecount if hiv==`hivlevel'
+	local denom_hiv_`hivlevel'=r(N)
+		
+	safecount if `variable' `condition' & hiv==`hivlevel'
+	local cellcount = r(N)
+	local colpct = 100*(r(N)/`denom_hiv_`hivlevel'')
+	file write tablecontent (`cellcount')  (" (") %3.1f (`colpct') (")") 
+	if `hivlevel'==0 file write tablecontent _tab
+		else file write tablecontent _n
+	}
+	
+end
+
+*******************************************************************************
+*Generic code to output one section (varible) within table (calls above)
+cap prog drop tabulatevariable
+prog define tabulatevariable
+syntax, variable(varname) start(real) end(real) [missing] 
+
+	foreach varlevel of numlist `start'/`end'{ 
+		generaterow, variable(`variable') condition("==`varlevel'") 
+	}
+	if "`missing'"!="" generaterow, variable(`variable') condition(">=.") 
+
+end
+
+*******************************************************************************
+
+
+*Set up output file
+cap file close tablecontent
+file open tablecontent using ./output/an_caseDescrTable.txt, write text replace
+
+gen byte cons=1
+tabulatevariable, variable(testCase) start(0) end(1) 
+file write tablecontent _n 
+
+
+
+
+
+
+
+
+
+
 log close
 
 
