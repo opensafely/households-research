@@ -167,7 +167,7 @@ end
 
 *Set up output file
 cap file close tablecontent
-file open tablecontent using ./output/an_caseDescrTable.txt, write text replace
+file open tablecontent using ./released_outputs/an_caseDescrTable.txt, write text replace
 file write tablecontent _tab ("No") _tab ("Yes") _tab _n
 file write tablecontent ("Total recorded") _n
 tabulatevariable, variable(clinCase) start(0) end(1)
@@ -194,7 +194,7 @@ restore
 file write tablecontent _n 
 
 
-
+file close tablecontent
 
 
 
