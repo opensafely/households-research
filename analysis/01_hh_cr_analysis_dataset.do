@@ -731,18 +731,25 @@ Outcome summary:
 
 /*making this a program as would like to do it separately for each epi time period (All, <31 May, 01Jun-31Aug, 01Sep */
 
-	*(1)create a main outcome variable for transmission model that has all three probable cases from primary care, both death definitions and hospital admission date
+	*(1)create a main outcome variable for transmission model that has all three probable cases from primary care, sgss positive, both death definitions and hospital admission date
 	generate case=0
 	replace case=1 if covid_tpp_probable!="" 
 	replace case=1 if died_ons_covid_flag_any==1 
 	replace case=1 if died_ons_covid_flag_underlying==1 
 	replace case=1 if died_date_cpns!=""
 	replace case=1 if covid_admission_date!=""
-	la var case "Prim_care: pos test, diag or sequel; any death cert COVID; COVID hosp adm"
+	replace case=1 if first_positive_test_date!=""
+	la var case "SGSS positive; Prim_care: pos test, diag or sequel; any death cert COVID; COVID hosp adm"
 	*add people who had confirmed covid death as cases
 
 
 	*(2)create outcomes and dates for each of the pos test, clin diag, covid sequelue, COVID hospitalisation, COVID death
+	generate sgssCase=0
+	replace sgssCase=1 if first_positive_test_date!="" 
+	la var sgssCase "SGSS case"
+	generate sgssCaseDate=date(first_positive_test_date, "YMD")
+	format sgssCaseDate %td 
+	
 	generate clinCase=0
 	replace clinCase=1 if covid_tpp_probableclindiag!="" 
 	la var clinCase "Primary care clin diag case"
@@ -787,13 +794,13 @@ Outcome summary:
 
 	*create a casedate for the overall case - earliest of all the case type dates
 	generate caseDate=.
-	replace caseDate=min(clinCaseDate, testCaseDate, seqCaseDate, hospCaseDate, deathCaseDate)
+	replace caseDate=min(sgssCaseDate, clinCaseDate, testCaseDate, seqCaseDate, hospCaseDate, deathCaseDate)
 
 
 	*create a version of this that is all the "more certain" case types (all except covid_tpp_probableclindiag)
 	generate moreCertainCase=case
 	*if person only had clinCase, then they are not a moreCertainCase
-	replace moreCertainCase=0 if clinCase==1 & testCaseDate==0 & seqCaseDate==0 & hospCaseDate==0 & deathCaseDate==0
+	replace moreCertainCase=0 if clinCase==1 & sgssCase==0 & testCaseDate==0 & seqCaseDate==0 & hospCaseDate==0 & deathCaseDate==0
 	la var moreCertainCase "Had at least one of the case events that was more certain than clinCase"
 
 	

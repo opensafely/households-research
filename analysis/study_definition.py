@@ -40,6 +40,28 @@ study = StudyDefinition(
         },
     ),
     # OUTCOMES
+    # sgss test results
+    first_tested_for_covid=patients.with_test_result_in_sgss(
+        pathogen="SARS-CoV-2",
+        test_result="any",
+        on_or_after="2020-02-01",
+        find_first_match_in_period=True,
+        returning="date",
+        date_format="YYYY-MM-DD",
+        return_expectations={"date": {"earliest" : "2020-02-01"},
+        "rate" : "exponential_increase"},
+    ),
+    first_positive_test_date=patients.with_test_result_in_sgss(
+        pathogen="SARS-CoV-2",
+        test_result="positive",
+        on_or_after="2020-02-01",
+        find_first_match_in_period=True,
+        returning="date",
+        date_format="YYYY-MM-DD",
+        return_expectations={"date": {"earliest" : "2020-02-01"},
+        "rate" : "exponential_increase"},
+    ),
+    # deaths  
     died_ons_covid_flag_any=patients.with_these_codes_on_death_certificate(
         covid_codelist,
         on_or_after="2020-02-01",

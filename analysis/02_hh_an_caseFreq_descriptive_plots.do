@@ -100,6 +100,11 @@ display "**************Type of cases in data (over entire time period)**********
 display "All cases:"
 safetab case
 
+generate sgssCaseDefine=0
+replace sgssCaseDefine=1 if sgssCase==1 & sgssCaseDate==case_date
+display "Cases defined by sgss positive test"
+safetab sgssCaseDefine
+
 generate testCaseDefine=0
 replace testCaseDefine=1 if testCase==1 & testCaseDate==case_date
 display "Cases defined by primary care positive test"
@@ -126,28 +131,24 @@ safetab clinCase moreCertainCase if clinCase==1, row
 
 
 
-
-
-
 cap prog drop generaterow
 program define generaterow
 syntax, variable(varname) condition(string) 
 	
 	*put the varname and condition to left so that alignment can be checked vs shell
-	file write tablecontent ("`variable'") _tab ("`condition'") _tab
 	
-	foreach hivlevel of numlist 0 1{
-	
-	safecount if hiv==`hivlevel'
-	local denom_hiv_`hivlevel'=r(N)
-		
-	safecount if `variable' `condition' & hiv==`hivlevel'
-	local cellcount = r(N)
-	local colpct = 100*(r(N)/`denom_hiv_`hivlevel'')
-	file write tablecontent (`cellcount')  (" (") %3.1f (`colpct') (")") 
-	if `hivlevel'==0 file write tablecontent _tab
-		else file write tablecontent _n
-	}
+	file write tablecontent ("`variable'") _tab 
+	*safecount if `variable' `condition' & hiv==`hivlevel'
+	safecount
+	local total=r(N)
+	safecount if `variable'==0
+	local totalZero=r(N)
+	local totalZeropct=`totalZero'/`total'*100
+	safecount if `variable'==1
+	local totalOne=r(N)
+	local totalOnepct=`totalOne'/`total'*100
+	file write tablecontent (`totalZero')  (" (") %3.1f (`totalZeropct') (")") _tab (`totalOne')  (" (") %3.1f (`totalOnepct') (")") 
+	file write tablecontent _n
 	
 end
 
@@ -157,10 +158,7 @@ cap prog drop tabulatevariable
 prog define tabulatevariable
 syntax, variable(varname) start(real) end(real) [missing] 
 
-	foreach varlevel of numlist `start'/`end'{ 
-		generaterow, variable(`variable') condition("==`varlevel'") 
-	}
-	if "`missing'"!="" generaterow, variable(`variable') condition(">=.") 
+	generaterow, variable(`variable') condition("==`varlevel'") 
 
 end
 
@@ -170,9 +168,29 @@ end
 *Set up output file
 cap file close tablecontent
 file open tablecontent using ./output/an_caseDescrTable.txt, write text replace
+file write tablecontent _tab ("No") _tab ("Yes") _tab _n
+file write tablecontent ("Total recorded") _n
+tabulatevariable, variable(clinCase) start(0) end(1)
+tabulatevariable, variable(testCase) start(0) end(1)
+tabulatevariable, variable(sgssCase) start(0) end(1)
+tabulatevariable, variable(hospCase) start(0) end(1)
+tabulatevariable, variable(deathCase) start(0) end(1)
+file write tablecontent ("Recorded as first case event") _n
+tabulatevariable, variable(clinCaseDefine) start(0) end(1)
+tabulatevariable, variable(testCaseDefine) start(0) end(1)
+tabulatevariable, variable(sgssCaseDefine) start(0) end(1)
+tabulatevariable, variable(hospCaseDefine) start(0) end(1)
+tabulatevariable, variable(deathCaseDefine) start(0) end(1)
+file write tablecontent ("% of people with clin case diagnosis who also had a more definite case event") _n
+preserve
+	keep if clinCase==1
+	generate displayVar=0
+	replace displayVar=1 if moreCertainCase==1
+	tabulatevariable, variable(displayVar) start(0) end(1)
+restore
 
-gen byte cons=1
-tabulatevariable, variable(testCase) start(0) end(1) 
+
+
 file write tablecontent _n 
 
 
