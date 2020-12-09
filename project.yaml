@@ -45,28 +45,12 @@ actions:
         log: opensafely_age_hh_ridge_20_1_and_seed_1.log
 
 
-  run_model_54_6_1:
-    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 1 --add-ridge 54.6
-    needs: [generate_model_data]
-    outputs:
-      moderately_sensitive:
-        log: opensafely_age_hh_ridge_54_6_and_seed_1.log
-
-
   run_model_20_1_3:
     run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 3 --add-ridge 20.1
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
         log: opensafely_age_hh_ridge_20_1_and_seed_3.log
-
-
-  run_model_54_6_3:
-    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 3 --add-ridge 54.6
-    needs: [generate_model_data]
-    outputs:
-      moderately_sensitive:
-        log: opensafely_age_hh_ridge_54_6_and_seed_3.log
 
 
   run_model_20_1_5:
@@ -77,28 +61,12 @@ actions:
         log: opensafely_age_hh_ridge_20_1_and_seed_5.log
 
 
-  run_model_54_6_5:
-    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 5 --add-ridge 54.6
-    needs: [generate_model_data]
-    outputs:
-      moderately_sensitive:
-        log: opensafely_age_hh_ridge_54_6_and_seed_5.log
-
-
   run_model_20_1_81:
     run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 81 --add-ridge 20.1
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
         log: opensafely_age_hh_ridge_20_1_and_seed_81.log
-
-
-  run_model_54_6_81:
-    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 81 --add-ridge 54.6
-    needs: [generate_model_data]
-    outputs:
-      moderately_sensitive:
-        log: opensafely_age_hh_ridge_54_6_and_seed_81.log
 
 
   run_model_20_1_83:
@@ -109,28 +77,12 @@ actions:
         log: opensafely_age_hh_ridge_20_1_and_seed_83.log
 
 
-  run_model_54_6_83:
-    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 83 --add-ridge 54.6
-    needs: [generate_model_data]
-    outputs:
-      moderately_sensitive:
-        log: opensafely_age_hh_ridge_54_6_and_seed_83.log
-
-
   run_model_20_1_85:
     run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 85 --add-ridge 20.1
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
         log: opensafely_age_hh_ridge_20_1_and_seed_85.log
-
-
-  run_model_54_6_85:
-    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 85 --add-ridge 54.6
-    needs: [generate_model_data]
-    outputs:
-      moderately_sensitive:
-        log: opensafely_age_hh_ridge_54_6_and_seed_85.log
 
 
   run_model_20_1_23:
@@ -141,14 +93,6 @@ actions:
         log: opensafely_age_hh_ridge_20_1_and_seed_23.log
 
 
-  run_model_54_6_23:
-    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 23 --add-ridge 54.6
-    needs: [generate_model_data]
-    outputs:
-      moderately_sensitive:
-        log: opensafely_age_hh_ridge_54_6_and_seed_23.log
-
-
   run_model_20_1_37:
     run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 37 --add-ridge 20.1
     needs: [generate_model_data]
@@ -157,16 +101,24 @@ actions:
         log: opensafely_age_hh_ridge_20_1_and_seed_37.log
 
 
-  run_model_54_6_37:
-    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 37 --add-ridge 54.6
+  run_model_20_1_42:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 42 --add-ridge 20.1
     needs: [generate_model_data]
     outputs:
       moderately_sensitive:
-        log: opensafely_age_hh_ridge_54_6_and_seed_37.log
+        log: opensafely_age_hh_ridge_20_1_and_seed_42.log
+
+
+  run_model_20_1_13:
+    run: python:latest python analysis/opensafely_age_hh_th.py --starting-parameter 13 --add-ridge 20.1
+    needs: [generate_model_data]
+    outputs:
+      moderately_sensitive:
+        log: opensafely_age_hh_ridge_20_1_and_seed_13.log
 
   run_all:
     needs:
-      [run_model_20_1_1, run_model_54_6_1, run_model_20_1_3, run_model_54_6_3, run_model_20_1_5, run_model_54_6_5, run_model_20_1_81, run_model_54_6_81, run_model_20_1_83, run_model_54_6_83, run_model_20_1_85, run_model_54_6_85, run_model_20_1_23, run_model_54_6_23, run_model_20_1_37, run_model_54_6_37]
+      [run_model_20_1_1, run_model_20_1_3, run_model_20_1_5, run_model_20_1_81, run_model_20_1_83, run_model_20_1_85, run_model_20_1_23, run_model_20_1_37, run_model_20_1_42, run_model_20_1_13]
     # In order to be valid this action needs to define a run commmand and some
     # output. We don't really care what these are but the below does the trick.
     # In a future release of the platform, this special action won't need to be
