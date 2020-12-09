@@ -8,8 +8,8 @@ action_template = """
 """
 
  
-seeds = [ 1, 3, 5, 81, 83, 85, 23, 37 ]
-ridges = [ 20.1 , 54.6 ]
+seeds = [ 1, 3, 5, 81, 83, 85, 23, 37, 42, 13 ]
+ridges = [ 20.1 ]
 
 for s in seeds:
     for r in ridges:
