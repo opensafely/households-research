@@ -17,6 +17,15 @@ actions:
       highly_sensitive:
         allvars: output/hh_analysis_dataset.dta
 
+  prepare_epid_periods:
+    run: stata-mp:latest analysis/01_hh_cr_epidemicPeriod_datasets.do
+    needs: [prepare_data]
+    outputs:
+      highly_sensitive:
+        allvars: output/hhsThatCrossedBinaryEpidemicPeriod.dta
+      moderately_sensitive:
+        graph: released_outputs/overall_hhEpidemicDistributions.svg
+
   output_descriptive:
     run: stata-mp:latest analysis/02_hh_an_caseFreq_descriptive_plots.do
     needs: [prepare_data]
