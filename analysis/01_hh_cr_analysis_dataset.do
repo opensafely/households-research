@@ -802,8 +802,6 @@ Outcome summary:
 	*if person only had clinCase, then they are not a moreCertainCase
 	replace moreCertainCase=0 if clinCase==1 & sgssCase==0 & testCaseDate==0 & seqCaseDate==0 & hospCaseDate==0 & deathCaseDate==0
 	la var moreCertainCase "Had at least one of the case events that was more certain than clinCase"
-
-	
 	
 
 
@@ -815,13 +813,65 @@ drop covid_tpp_probable - covid_admission_date
 *create a total number of cases in the household variable
 bysort hh_id:egen totCasesInHH=total(case)
 la var totCasesInHH "Total number of cases in a specific household"
-	
+
 *drop households with one person or more than 9, order and rename variables
 tab hh_size
 
 order patient_id age hh_id hh_size caseDate ethnicity indexdate
 ren caseDate case_date
 format case_date %td
+
+
+
+
+*create marker for epidemic time periods
+generate epiPeriod=.
+la var epiPeriod "Time period of case-related record during the epidemic"
+replace epiPeriod=1 if case_date<=date("31may2020", "DMY")
+replace epiPeriod=2 if case_date>=date("01jun2020", "DMY") & case_date<=date("31aug2020", "DMY")
+replace epiPeriod=3 if case_date>=date("01sep2020", "DMY")
+
+label define epiPeriodlbl 1 "<31 May" 2 "01 June - 31 Aug" 3 "01 Sep+" 
+label values epiPeriod epiPeriodlbl
+
+tab epiPeriod, miss
+
+
+*create marker for epidemic time periods - binary (pre post July)
+generate epiPeriodBinary=.
+la var epiPeriodBinary "Pre or post July time period of epidemic"
+replace epiPeriodBinary=1 if case_date<=date("30jun2020", "DMY")
+replace epiPeriodBinary=2 if case_date>=date("01jul2020", "DMY")
+
+label define epiPeriodBinarylbl 1 "<01 July" 2 ">01 July"
+label values epiPeriodBinary epiPeriodBinarylbl
+
+tab epiPeriodBinary, miss
+
+
+*create a variable that is the number of days between the first and last infection in a household, and a variable that marks if the hh crossed the (binary) epidemic period
+preserve
+	keep if case==1
+	sort hh_id case_date
+	*hh epidemic length
+	generate hhEpiLength=.
+	la var hhEpiLength "Num days between first and last case in hh"
+	by hh_id: replace hhEpiLength=case_date[_N] - case_date[1]
+	*marker that hh epidemic crossed the binary cut-off
+	generate hhEpiCrossBin=0
+	la var hhEpiCrossBin "hh epidemic spanned July 1st"
+	by hh_id: replace hhEpiCrossBin=1 if hhEpiLength>0 & case_date[1]<date("01jul2020", "DMY") & case_date[_N]>=date("01jul2020", "DMY")
+	duplicates drop hh_id, force
+	keep hh_id hhEpiLength hhEpiCrossBin
+	tempfile forMerging
+	save `forMerging'
+restore
+
+merge m:1 hh_id using `forMerging'	
+
+
+
+
 
 *ren primary_care_suspect_case	suspected_date
 *ren first_tested_for_covid		tested_date
@@ -1303,19 +1353,7 @@ label values bmicat bmicatLabel
 */
 
 
-*create marker for epidemic time period period
-generate epiPeriod=.
-la var epiPeriod "Time period of case-related record during the epidemic"
-replace epiPeriod=1 if case_date<=date("31may2020", "DMY")
-replace epiPeriod=2 if case_date>=date("01jun2020", "DMY") & case_date<=date("31aug2020", "DMY")
-replace epiPeriod=3 if case_date>=date("01sep2020", "DMY")
-
-label define epiPeriodlbl 1 "<31 May" 2 "01 June - 31 Aug" 3 "01 Sep+" 
-label values epiPeriod epiPeriodlbl
-
-tab epiPeriod, miss
-
-
+drop _merge
 
 save ./output/hh_analysis_dataset.dta, replace
 
