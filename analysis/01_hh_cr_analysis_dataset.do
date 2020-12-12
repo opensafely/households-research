@@ -27,7 +27,8 @@ import delimited ./output/input.csv, clear
 *Both server and local
 * Open a log file
 cap log close
-log using "01_hh_cr_create_analysis_dataset.log", replace t
+log using 01_hh_cr_create_analysis_dataset.log, replace t
+
 
 
 di "STARTING safecount FROM IMPORT:"
