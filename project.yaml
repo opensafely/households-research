@@ -4,27 +4,21 @@ expectations:
   population_size: 100000
 
 actions:
-  generate_cohort:
+  generate_cohorts:
     run: cohortextractor:latest generate_cohort
     outputs:
       highly_sensitive:
         cohort: output/input.csv
+        cohort_post1stJuly: output/input_post1stJuly.csv
 
   prepare_data:
     run: stata-mp:latest analysis/01_hh_cr_analysis_dataset.do
-    needs: [generate_cohort]
+    needs: [generate_cohorts]
     outputs:
       highly_sensitive:
         allvars: output/hh_analysis_dataset.dta
-
-  prepare_epid_periods:
-    run: stata-mp:latest analysis/01_hh_cr_epidemicPeriod_datasets.do
-    needs: [prepare_data]
-    outputs:
-      highly_sensitive:
-        allvars: output/hhsThatCrossedBinaryEpidemicPeriod.dta
-      moderately_sensitive:
-        graph: released_outputs/overall_hhEpidemicDistributions.svg
+        crossedBinEpi: output/hhsThatCrossedBinaryEpidemicPeriod.dta
+        post1stJuly: output/hh_analysis_dataset_post1stJuly.dta
 
   output_descriptive:
     run: stata-mp:latest analysis/02_hh_an_caseFreq_descriptive_plots.do
