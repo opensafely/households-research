@@ -858,8 +858,8 @@ preserve
 	generate hhEpiLength=.
 	la var hhEpiLength "Num days between first and last case in hh"
 	*create variables that store the first and last infection in the household
-	by hh_id: generate first_hh_case==case_date[1]
-	by hh_id: generate last_hh_case==case_date[_N]
+	by hh_id: generate first_hh_case=case_date[1]
+	by hh_id: generate last_hh_case=case_date[_N]
 	format first_hh_case %td
 	format last_hh_case %td
 	la var first_hh_case "Date of first case in household"
