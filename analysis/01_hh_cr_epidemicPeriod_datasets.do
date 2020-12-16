@@ -19,6 +19,9 @@ use hh_analysis_dataset.dta, clear
 
 /* === Housekeeping === */
 
+*for when I am testing stuff out on the server but not making edits:
+*use E:/high_privacy/workspaces/households/output/hh_analysis_dataset.dta
+
 sysdir set PLUS ./analysis/adofiles
 sysdir set PERSONAL ./analysis/adofiles
 use  ./output/hh_analysis_dataset.dta, clear
@@ -46,7 +49,7 @@ count
 *keep only people with cases, then one record per household, and only the variables I need for this bit
 keep if case==1
 duplicates drop hh_id, force
-keep hh_id hhEpiLength hhEpiCrossBin
+keep hh_id hhEpiLength hhEpiCrossBin first_hh_case last_hh_case
 
 *plot the overall distribution of length of epidemics in hh
 sum hhEpiLength, detail
@@ -58,7 +61,7 @@ graph export ./released_outputs/overall_hhEpidemicDistributions.svg, as(svg) rep
 
 *create a file that lists the household epidemic that start before 01 July and end after 01 July
 keep if hhEpiCrossBin==1
-keep hh_id
+keep hh_id hhEpiLength hhEpiCrossBin first_hh_case last_hh_case
 safecount
 save ./output/hhsThatCrossedBinaryEpidemicPeriod.dta, replace
 

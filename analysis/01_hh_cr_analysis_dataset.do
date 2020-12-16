@@ -857,13 +857,21 @@ preserve
 	*hh epidemic length
 	generate hhEpiLength=.
 	la var hhEpiLength "Num days between first and last case in hh"
-	by hh_id: replace hhEpiLength=case_date[_N] - case_date[1]
+	*create variables that store the first and last infection in the household
+	by hh_id: generate first_hh_case==case_date[1]
+	by hh_id: generate last_hh_case==case_date[_N]
+	format first_hh_case %td
+	format last_hh_case %td
+	la var first_hh_case "Date of first case in household"
+	la var last_hh_case "Date of last case in household"
+	*create variable that is the length of the epidemic
+	by hh_id: replace hhEpiLength=last_hh_case - first_hh_case
 	*marker that hh epidemic crossed the binary cut-off
 	generate hhEpiCrossBin=0
 	la var hhEpiCrossBin "hh epidemic spanned July 1st"
-	by hh_id: replace hhEpiCrossBin=1 if hhEpiLength>0 & case_date[1]<date("01jul2020", "DMY") & case_date[_N]>=date("01jul2020", "DMY")
+	by hh_id: replace hhEpiCrossBin=1 if hhEpiLength>0 & first_hh_case<date("01jul2020", "DMY") & last_hh_case>=date("01jul2020", "DMY")
 	duplicates drop hh_id, force
-	keep hh_id hhEpiLength hhEpiCrossBin
+	keep hh_id hhEpiLength hhEpiCrossBin first_hh_case last_hh_case
 	tempfile forMerging
 	save `forMerging'
 restore
