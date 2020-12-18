@@ -19,6 +19,11 @@ actions:
         allvars: output/hh_analysis_dataset.dta
         crossedBinEpi: output/hhsThatCrossedBinaryEpidemicPeriod.dta
         post1stJuly: output/hh_analysis_dataset_post1stJuly.dta
+      moderately_sensitive:
+        log1: released_outputs/01_hh_cr_create_analysis_dataset.log
+        log2: released_outputs/01_hh_cr_create_analysis_dataset_post1stJuly.log
+        log3: released_outputs/01_hh_dropping_hhEpidemics_crossing1stJuly.log
+        log4: released_outputs/01_hh_finalMerge.log
 
   output_descriptive:
     run: stata-mp:latest analysis/02_hh_an_caseFreq_descriptive_plots.do
