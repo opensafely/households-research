@@ -29,17 +29,15 @@ program crAnalysisDataset
 	*Both server and local
 	* Open a log file
 	cap log close
-	log using 01_hh_cr_create_analysis_dataset.log, replace t
-
-
+	log using ./released_outputs/01_hh_cr_create_analysis_dataset`1'.log, replace t
 
 	di "STARTING safecount FROM IMPORT:"
 	safecount
 
 	*Start dates
-	gen index 			= "01/02/2020"
+	gen index 			= "01/07/2020"
 
-	* Date of cohort entry, 1 Feb 2020
+	* Date of cohort entry, 1 July 2020
 	gen indexdate = date(index, "DMY")
 	format indexdate %d
 
@@ -1367,6 +1365,8 @@ program crAnalysisDataset
 	drop _merge
 
 	save ./output/hh_analysis_dataset`1'.dta, replace
+	
+	log close
 end 
 
 *call program to create dataset for entire period
@@ -1374,6 +1374,11 @@ crAnalysisDataset
 
 
 **********************Save a file that can be used to remove hh that span the binary epi period***************
+
+cap log close
+log using ./released_outputs/01_hh_dropping_hhEpidemics_crossing1stJuly.log, replace t
+
+
 *helper variables
 count
 
@@ -1396,17 +1401,25 @@ keep hh_id hhEpiLength hhEpiCrossBin first_hh_case last_hh_case
 safecount
 save ./output/hhsThatCrossedBinaryEpidemicPeriod.dta, replace
 
+log close
+
 
 *create the dataset for the post 1st July period only
 crAnalysisDataset _post1stJuly
+
+cap log close
+log using ./released_outputs/01_hh_finalMerge.log, replace t
+
 
 *drop households from the post1stJuly dataset that had epidemics that started prior to 1st July but carried on after 1st July
 merge m:1 hh_id using ./output/hhsThatCrossedBinaryEpidemicPeriod.dta
 drop if _merge==3
 drop _merge
 
+save ./output/hh_analysis_dataset_post1stJuly.dta, replace
 
 log close
+
 
 /*
 
