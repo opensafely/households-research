@@ -1417,7 +1417,7 @@ log using ./released_outputs/01_hh_finalMerge.log, replace t
 
 *drop households from the post1stJuly dataset that had epidemics that started prior to 1st July but carried on after 1st July
 merge m:1 hh_id using ./output/hhsThatCrossedBinaryEpidemicPeriod.dta
-drop if _merge==3
+keep if _merge==1
 drop _merge
 
 save ./output/hh_analysis_dataset_post1stJuly.dta, replace
