@@ -790,7 +790,7 @@ program crAnalysisDataset
 			rename died_date_cpns2 died_date_cpns
 			format died_date_cpns %td
 			*take the earliest date if both are populated
-			generate deathCaseDate=min(died_date_ons, died_date_cpns)
+			generate deathCaseDate=min(died_date_ons, died_date_cpns) if deathCase==1
 			la var deathCaseDate "Date of case based on COVID cert death date (earliest of ONS or CPNS)"
 
 
