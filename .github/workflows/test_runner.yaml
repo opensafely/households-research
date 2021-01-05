@@ -22,6 +22,8 @@ jobs:
       run: docker login https://ghcr.io -u ${{ github.actor }} --password ${{ secrets.DOCKER_RO_TOKEN }}
     - name: Update codelists
       run: cohortextractor update_codelists
+    - name: dos2unix
+      run: sed -i 's/\r//' codelists/*.csv
     - name: Check codelists are up to date
       run: '[[ -z $(git status --porcelain codelists) ]] || (echo "Uncommitted changes to codelists detected, aborting" && exit 1)'
 
