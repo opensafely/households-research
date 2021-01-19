@@ -1,6 +1,6 @@
 /*==============================================================================
 DO FILE NAME:			01_hh_cr_analysis_dataset.do
-PROJECT:				Household and SARS-CoV-2 transmission
+PROJECT:				Household risk classification
 DATE: 					12th August 2020 
 AUTHOR:					Kevin Wing adapted from R Mathur H Forbes, A Wong, A Schultze, C Rentsch,K Baskharan, E Williamson 										
 DESCRIPTION OF FILE:	program 00, data management for project  
