@@ -1,5 +1,5 @@
 /*==============================================================================
-DO FILE NAME:			00_cr_analysis_dataset
+DO FILE NAME:			01_hh_cr_analysis_dataset.do
 PROJECT:				Household and SARS-CoV-2 transmission
 DATE: 					12th August 2020 
 AUTHOR:					Kevin Wing adapted from R Mathur H Forbes, A Wong, A Schultze, C Rentsch,K Baskharan, E Williamson 										
