@@ -12,9 +12,7 @@ DATASETS USED:			data in memory (from output/inputWithHHDependencies.csv)
 DATASETS CREATED: 		none
 OTHER OUTPUT: 			logfiles, printed to folder analysis/$logdir
 
-
-sysdir set PLUS "/Users/kw/Documents/GitHub/households-research/analysis/adofiles" 
-sysdir set PERSONAL "/Users/kw/Documents/GitHub/households-research/analysis/adofiles" 
+ 
 
 							
 ==============================================================================*/
