@@ -734,8 +734,8 @@ program crAnalysisDataset
 			*(1)create a main outcome variable for transmission model that has all three probable cases from primary care, sgss positive, both death definitions and hospital admission date
 			generate case=0
 			replace case=1 if covid_tpp_probable!="" 
-			replace case=1 if died_ons_covid_flag_any!=""  
-			replace case=1 if died_ons_covid_flag_underlying!="" 
+			replace case=1 if died_ons_covid_flag_any==1  
+			replace case=1 if died_ons_covid_flag_underlying==1 
 			replace case=1 if died_date_cpns!=""
 			replace case=1 if covid_admission_date!=""
 			replace case=1 if first_positive_test_date!=""
@@ -775,7 +775,7 @@ program crAnalysisDataset
 			format hospCaseDate %td
 
 			generate deathCase=0
-			replace deathCase=1 if died_ons_covid_flag_any!=""|died_ons_covid_flag_underlying!=""|died_date_cpns!=""
+			replace deathCase=1 if died_ons_covid_flag_any==1|died_ons_covid_flag_underlying==1|died_date_cpns!=""
 			la var deathCase "Case based on ons or cpns death cert"
 			*prepare ons death date
 			generate died_date_ons2=date(died_date_ons, "YMD")
