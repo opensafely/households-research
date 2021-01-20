@@ -66,13 +66,13 @@ study = StudyDefinition(
         covid_codelist,
         on_or_after="2020-07-01",
         match_only_underlying_cause=False,
-        return_expectations={"date": {"earliest": "2020-07-01"}, "incidence": 0.6},
+        return_expectations={"incidence": 0.33},
     ),
     died_ons_covid_flag_underlying=patients.with_these_codes_on_death_certificate(
         covid_codelist,
         on_or_after="2020-07-01",
         match_only_underlying_cause=True,
-        return_expectations={"date": {"earliest": "2020-07-01"}, "incidence": 0.6},
+        return_expectations={"incidence": 0.33},
     ),
     died_date_ons=patients.died_from_any_cause(
         on_or_after="2020-07-01",

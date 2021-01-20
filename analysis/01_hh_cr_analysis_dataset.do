@@ -1,6 +1,6 @@
 /*==============================================================================
-DO FILE NAME:			00_cr_analysis_dataset
-PROJECT:				Household and SARS-CoV-2 transmission
+DO FILE NAME:			01_hh_cr_analysis_dataset.do
+PROJECT:				Household transmission model
 DATE: 					12th August 2020 
 AUTHOR:					Kevin Wing adapted from R Mathur H Forbes, A Wong, A Schultze, C Rentsch,K Baskharan, E Williamson 										
 DESCRIPTION OF FILE:	program 00, data management for project  
@@ -12,9 +12,7 @@ DATASETS USED:			data in memory (from output/inputWithHHDependencies.csv)
 DATASETS CREATED: 		none
 OTHER OUTPUT: 			logfiles, printed to folder analysis/$logdir
 
-
-sysdir set PLUS "/Users/kw/Documents/GitHub/households-research/analysis/adofiles" 
-sysdir set PERSONAL "/Users/kw/Documents/GitHub/households-research/analysis/adofiles" 
+ 
 
 							
 ==============================================================================*/
@@ -295,7 +293,7 @@ program crAnalysisDataset
 
 		gen male = 1 if sex == "M"
 		replace male = 0 if sex == "F"
-		label define male 0"Female" 1"Male"
+		label define male 0 "Female" 1 "Male"
 		label values male male
 		safetab male
 
@@ -736,7 +734,7 @@ program crAnalysisDataset
 			*(1)create a main outcome variable for transmission model that has all three probable cases from primary care, sgss positive, both death definitions and hospital admission date
 			generate case=0
 			replace case=1 if covid_tpp_probable!="" 
-			replace case=1 if died_ons_covid_flag_any==1 
+			replace case=1 if died_ons_covid_flag_any==1  
 			replace case=1 if died_ons_covid_flag_underlying==1 
 			replace case=1 if died_date_cpns!=""
 			replace case=1 if covid_admission_date!=""

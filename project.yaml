@@ -40,6 +40,8 @@ actions:
         log1: released_outputs/02_hh_an_caseFreq_descriptive_plots.log
         log2: released_outputs/an_caseDescrTable.txt
 
+        
+
 
   generate_model_data:
     run: python:latest python analysis/generate_model_data.py
