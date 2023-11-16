@@ -1,6 +1,6 @@
 # households-research
 
-[View on OpenSAFELY](https://jobs.opensafely.org/repo/https%253A%252F%252Fgithub.com%252Fopensafely%252Fhousholds-research)
+[View on OpenSAFELY](https://jobs.opensafely.org/households/)
 
 Details of the purpose and any published outputs from this project can be found at the link above.
 
